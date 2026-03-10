@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration - JOSHUA</title>
+  <meta name="description" content="Comprehensive reference for the JOSHUA configuration system: Protocol Buffers schema, operation modes, robot hardware, AI models, simulation, and preset configurations.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html">Architecture</a></li>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="configuration.html" class="active">Configuration</a></li>
+      <li><a href="robot-layer.html">Robot Layer</a></li>
+      <li><a href="ai-system.html">AI System</a></li>
+      <li><a href="simulation.html">Simulation</a></li>
+      <li><a href="deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Docs Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>Overview</h4>
+      <a href="#overview" class="active">Configuration Overview</a>
+      <a href="#schema-hierarchy">Schema Hierarchy</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>General</h4>
+      <a href="#general-configuration">General Configuration</a>
+      <a href="#operation-modes">Operation Modes</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Robot</h4>
+      <a href="#robot-configuration">Robot Configuration</a>
+      <a href="#single-action">SingleAction</a>
+      <a href="#single-perception">SinglePerception</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>AI</h4>
+      <a href="#ai-configuration">AI Configuration</a>
+      <a href="#single-model">SingleModel</a>
+      <a href="#data-store">DataStore</a>
+      <a href="#training">Training</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Infrastructure</h4>
+      <a href="#ros2-node-configuration">ROS2 Node Config</a>
+      <a href="#communication-configuration">Communication</a>
+      <a href="#simulation-configuration">Simulation Config</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Reference</h4>
+      <a href="#example-configuration">Example .pbtxt</a>
+      <a href="#configuration-presets">Presets Reference</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+    <h1>Configuration System</h1>
+    <p>Complete reference for JOSHUA's configuration-driven architecture. Learn how a single Protocol Buffers text file defines your entire robot system&mdash;hardware, sensors, AI models, communication, and operation mode&mdash;without requiring any code changes.</p>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 1: Overview -->
+    <!-- ============================================================ -->
+    <h2 id="overview">Overview</h2>
+
+    <p>The entire JOSHUA system is driven by a single <code>.pbtxt</code> (Protocol Buffers text format) configuration file. This design philosophy eliminates the need for code changes when reconfiguring the robot: swapping hardware, changing operation modes, adding sensors, or switching AI models are all accomplished by editing the configuration file alone.</p>
+
+    <div class="callout callout-info">
+      <strong>Why Protocol Buffers Text Format?</strong>
+      Protocol Buffers provide schema validation, type safety, language-neutral serialization, and backward-compatible evolution. The text format (<code>.pbtxt</code>) is human-readable and version-control friendly, making it ideal for robot configuration management.
+    </div>
+
+    <p>Key benefits of the configuration-driven approach:</p>
+    <ul>
+      <li><strong>Zero code changes</strong> &mdash; Reconfigure hardware, sensors, AI models, and operation modes entirely through configuration.</li>
+      <li><strong>Schema validation</strong> &mdash; The Protocol Buffers schema catches invalid configurations at parse time before any hardware is initialized.</li>
+      <li><strong>Preset library</strong> &mdash; Over 25 pre-built configuration presets for common robot setups, training scenarios, and simulation environments.</li>
+      <li><strong>Version control</strong> &mdash; Text-format configurations produce clean diffs, enabling meaningful code review of system changes.</li>
+      <li><strong>Cross-language support</strong> &mdash; The same configuration is consumed by C++ node orchestrators and Python AI inference pipelines via generated bindings.</li>
+    </ul>
+
+    <p>The configuration file is parsed by the <strong>Node Generator</strong> (the central orchestrator), which validates the configuration, resolves hardware dependencies, detects port conflicts, and spawns the appropriate ROS2 nodes as child processes.</p>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 2: Schema Hierarchy -->
+    <!-- ============================================================ -->
+    <h2 id="schema-hierarchy">Configuration Schema Hierarchy</h2>
+
+    <p>The root of every JOSHUA configuration is the <code>Config</code> proto message. It is a composite structure containing five major sub-messages, each governing a distinct aspect of the system:</p>
+
+    <pre><code>// Root configuration message
+message Config {
+  General     general     = 1;   // Operation mode, robot identity
+  Robot       robot       = 2;   // Actuators and sensors
+  Ai          ai          = 3;   // AI models, data stores, training
+  Calibration calibration = 4;   // Servo calibration data
+  SimulationConfig simulation = 5; // MuJoCo simulation settings
+}</code></pre>
+
+    <p>The hierarchy is designed so each subsystem is self-contained. The Node Generator reads the top-level <code>Config</code> and delegates each sub-message to the corresponding subsystem:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sub-message</th>
+          <th>Proto File</th>
+          <th>Responsibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>General</code></td>
+          <td><code>config.proto</code></td>
+          <td>Operation mode, robot type, name, and unique identifier</td>
+        </tr>
+        <tr>
+          <td><code>Robot</code></td>
+          <td><code>config.proto</code></td>
+          <td>All actuator and sensor definitions with their ROS2 nodes</td>
+        </tr>
+        <tr>
+          <td><code>Ai</code></td>
+          <td><code>config.proto</code></td>
+          <td>AI model registry, dataset configuration, and training pipelines</td>
+        </tr>
+        <tr>
+          <td><code>Calibration</code></td>
+          <td><code>config.proto</code></td>
+          <td>Servo motor calibration offsets and operational limits</td>
+        </tr>
+        <tr>
+          <td><code>SimulationConfig</code></td>
+          <td><code>simulation.proto</code></td>
+          <td>MuJoCo simulation mode, model paths, and mirror mappings</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 3: General Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="general-configuration">General Configuration</h2>
+
+    <p>The <code>General</code> message defines the system-wide identity and operation mode for the robot. Every configuration file must include a <code>general</code> block.</p>
+
+    <pre><code>message General {
+  OperationMode mode       = 1;   // System operation mode
+  string        robot_type = 2;   // e.g., "SO-ARM100", "LeKoch"
+  string        name       = 3;   // Human-readable name
+  string        id         = 4;   // Unique identifier
+}</code></pre>
+
+    <h3 id="operation-modes">Operation Modes</h3>
+
+    <p>The <code>OperationMode</code> enum determines the entire behavioral profile of the system. It controls which nodes are spawned, what hardware is initialized, and how data flows through the pipeline.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+          <th>Typical Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>MODE_TELEOPERATE</code></td>
+          <td>Leader-follower manual control</td>
+          <td>Demonstration recording, manual manipulation, Xbox controller input</td>
+        </tr>
+        <tr>
+          <td><code>MODE_INFERENCE</code></td>
+          <td>Autonomous AI model execution</td>
+          <td>Deploy trained SmolVLA or custom models for real-time robot control</td>
+        </tr>
+        <tr>
+          <td><code>MODE_TRAINING</code></td>
+          <td>Model training pipeline</td>
+          <td>RL training (PPO), imitation learning, evaluation runs</td>
+        </tr>
+        <tr>
+          <td><code>MODE_CALIBRATION</code></td>
+          <td>Hardware calibration sequence</td>
+          <td>Servo motor range detection, offset tuning, limit configuration</td>
+        </tr>
+        <tr>
+          <td><code>MODE_TEST</code></td>
+          <td>Hardware and system testing</td>
+          <td>Validate wiring, test individual actuators, verify sensor readings</td>
+        </tr>
+        <tr>
+          <td><code>MODE_DATA_STORE</code></td>
+          <td>Dataset collection and management</td>
+          <td>Record teleoperation episodes, organize training data, upload to HuggingFace</td>
+        </tr>
+        <tr>
+          <td><code>MODE_SIMULATION</code></td>
+          <td>Physics simulation environment</td>
+          <td>MuJoCo interactive simulation, digital twin mirroring, offscreen rendering</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Example general configuration block:</p>
+
+    <pre><code>general {
+  mode: MODE_TELEOPERATE
+  robot_type: "SO-ARM100"
+  name: "leader_follower_teleop"
+  id: "joshua-arm-001"
+}</code></pre>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 4: Robot Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="robot-configuration">Robot Configuration</h2>
+
+    <p>The <code>Robot</code> message defines all physical hardware in the system. It contains two repeated fields: one for actuators (actions) and one for sensors (perceptions). Each entry maps a piece of hardware to a ROS2 node with full communication configuration.</p>
+
+    <pre><code>message Robot {
+  repeated SingleAction     actions     = 1;  // Actuators (motors, servos)
+  repeated SinglePerception perceptions = 2;  // Sensors (cameras, encoders, LiDAR)
+}</code></pre>
+
+    <h3 id="single-action">SingleAction</h3>
+
+    <p>Each <code>SingleAction</code> entry defines one actuator group (e.g., one robot arm) with its ROS2 node configuration, action type, and hardware-specific driver settings.</p>
+
+    <pre><code>message SingleAction {
+  Node        node        = 1;   // ROS2 node configuration
+  ActionType  action_type = 2;   // Type of actuator
+  oneof actuator_config {
+    STS3215Config    sts3215_config    = 3;  // Waveshare STS3215 servo bus
+    MockMotorConfig  mock_motor_config = 4;  // Virtual motor for testing
+    SpikeMotorConfig spike_motor_config = 5; // LEGO SPIKE Pybricks motor
+  }
+}</code></pre>
+
+    <h4>ActionType Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+          <th>Hardware</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ACTION_LEADER</code></td>
+          <td>Leader arm in teleoperation pair</td>
+          <td>STS3215 servo bus</td>
+        </tr>
+        <tr>
+          <td><code>ACTION_FOLLOWER</code></td>
+          <td>Follower arm that mirrors leader</td>
+          <td>STS3215 servo bus</td>
+        </tr>
+        <tr>
+          <td><code>ACTION_SINGLE</code></td>
+          <td>Standalone actuator</td>
+          <td>Any supported motor</td>
+        </tr>
+        <tr>
+          <td><code>ACTION_MOCK</code></td>
+          <td>Virtual actuator for testing</td>
+          <td>MockMotorConfig</td>
+        </tr>
+        <tr>
+          <td><code>ACTION_SPIKE</code></td>
+          <td>LEGO SPIKE hub motor</td>
+          <td>SpikeMotorConfig via BLE</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Actuator Configurations</h4>
+
+    <p><strong>STS3215Config</strong> &mdash; Configuration for Waveshare STS3215 serial bus servos commonly used in the SO-ARM100 and similar arm designs:</p>
+
+    <pre><code>message STS3215Config {
+  Comm          comm          = 1;  // Serial port configuration
+  repeated int32 motor_ids    = 2;  // Bus IDs [1, 2, 3, 4, 5, 6]
+  int32         position_min  = 3;  // Minimum position value
+  int32         position_max  = 4;  // Maximum position value
+  int32         velocity      = 5;  // Default velocity
+  int32         acceleration  = 6;  // Default acceleration
+}</code></pre>
+
+    <p><strong>MockMotorConfig</strong> &mdash; Virtual motor driver for testing without physical hardware:</p>
+
+    <pre><code>message MockMotorConfig {
+  int32         num_motors   = 1;  // Number of simulated motors
+  int32         position_min = 2;  // Simulated range minimum
+  int32         position_max = 3;  // Simulated range maximum
+}</code></pre>
+
+    <p><strong>SpikeMotorConfig</strong> &mdash; Configuration for LEGO SPIKE motors controlled via Pybricks over BLE:</p>
+
+    <pre><code>message SpikeMotorConfig {
+  Comm           comm        = 1;  // BLE connection configuration
+  repeated string port_names = 2;  // Hub port identifiers ["A", "B", "C"]
+}</code></pre>
+
+    <h3 id="single-perception">SinglePerception</h3>
+
+    <p>Each <code>SinglePerception</code> entry defines one sensor with its ROS2 node, perception type, and device-specific configuration.</p>
+
+    <pre><code>message SinglePerception {
+  Node            node            = 1;  // ROS2 node configuration
+  PerceptionType  perception_type = 2;  // Type of sensor
+  oneof device_config {
+    CameraConfig   camera_config  = 3;  // Camera (OpenCV)
+    EncoderConfig  encoder_config = 4;  // Rotary encoder
+    LidarConfig    lidar_config   = 5;  // LiDAR sensor
+  }
+}</code></pre>
+
+    <h4>PerceptionType Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+          <th>Device Config</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>PERCEPTION_CAMERA</code></td>
+          <td>RGB camera via OpenCV</td>
+          <td><code>CameraConfig</code></td>
+        </tr>
+        <tr>
+          <td><code>PERCEPTION_ENCODER</code></td>
+          <td>Rotary position encoder</td>
+          <td><code>EncoderConfig</code></td>
+        </tr>
+        <tr>
+          <td><code>PERCEPTION_LIDAR</code></td>
+          <td>2D/3D LiDAR scanner</td>
+          <td><code>LidarConfig</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Device Configurations</h4>
+
+    <p><strong>CameraConfig</strong> &mdash; OpenCV-based camera configuration with full control over capture parameters:</p>
+
+    <pre><code>message CameraConfig {
+  int32  device_id   = 1;   // /dev/video index (e.g., 0, 2, 4)
+  int32  width       = 2;   // Capture width in pixels (e.g., 640)
+  int32  height      = 3;   // Capture height in pixels (e.g., 480)
+  int32  fps         = 4;   // Frames per second (e.g., 30)
+  string pixel_format = 5;  // OpenCV pixel format (e.g., "MJPG")
+  int32  brightness  = 6;   // OpenCV CAP_PROP_BRIGHTNESS
+  int32  contrast    = 7;   // OpenCV CAP_PROP_CONTRAST
+  int32  saturation  = 8;   // OpenCV CAP_PROP_SATURATION
+  int32  exposure    = 9;   // OpenCV CAP_PROP_EXPOSURE
+}</code></pre>
+
+    <p><strong>EncoderConfig</strong> &mdash; Rotary encoder for joint position feedback:</p>
+
+    <pre><code>message EncoderConfig {
+  Comm   comm             = 1;  // Communication interface
+  int32  resolution       = 2;  // Ticks per revolution
+  bool   inverted         = 3;  // Reverse counting direction
+}</code></pre>
+
+    <p><strong>LidarConfig</strong> &mdash; LiDAR sensor for distance measurement and mapping:</p>
+
+    <pre><code>message LidarConfig {
+  Comm   comm             = 1;  // Communication interface
+  float  angle_min        = 2;  // Minimum scan angle (radians)
+  float  angle_max        = 3;  // Maximum scan angle (radians)
+  float  range_min        = 4;  // Minimum detection range (meters)
+  float  range_max        = 5;  // Maximum detection range (meters)
+}</code></pre>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 5: AI Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="ai-configuration">AI Configuration</h2>
+
+    <p>The <code>Ai</code> message configures the complete AI pipeline: model selection, dataset management, and training infrastructure.</p>
+
+    <pre><code>message Ai {
+  repeated SingleModel models     = 1;  // AI models to load
+  DataStore            data_store = 2;  // Dataset configuration
+  Training             training   = 3;  // Training pipeline settings
+}</code></pre>
+
+    <h3 id="single-model">SingleModel</h3>
+
+    <p>Each <code>SingleModel</code> entry registers an AI model with the system. Models are loaded into the model registry and can be instantiated on demand.</p>
+
+    <pre><code>message SingleModel {
+  ModelType model_type                   = 1;  // Model architecture
+  string    pretrained_model_name_or_path = 2;  // HuggingFace model ID or local path
+  Node      node                         = 3;  // ROS2 node for inference I/O
+}</code></pre>
+
+    <h4>ModelType Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>RANDOM_NOISE</code></td>
+          <td>Random action generator</td>
+          <td>Testing and baseline comparison; outputs uniform random joint positions</td>
+        </tr>
+        <tr>
+          <td><code>SMOLVLA</code></td>
+          <td>Vision-Language-Action model</td>
+          <td>Multi-camera visual input + natural language task instruction to joint actions</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Example model configuration for SmolVLA inference:</p>
+
+    <pre><code>models {
+  model_type: SMOLVLA
+  pretrained_model_name_or_path: "lerobot/smolvla_base"
+  node {
+    node_name: "smolvla_inference"
+    node_id: 1
+    node_type: PYTHON
+    publishers {
+      data_type: JOINT_STATE
+      topic_name: "/ai/actions"
+      publish_rate_hz: 10.0
+    }
+    subscriptions {
+      data_type: IMAGE
+      topic_name: "/camera/top/image_raw"
+    }
+    subscriptions {
+      data_type: IMAGE
+      topic_name: "/camera/wrist/image_raw"
+    }
+  }
+}</code></pre>
+
+    <h3 id="data-store">DataStore</h3>
+
+    <p>The <code>DataStore</code> message configures how demonstration data and training datasets are managed.</p>
+
+    <pre><code>message DataStore {
+  DataFormat     format       = 1;  // Serialization format
+  StorageBackend storage      = 2;  // Storage location
+  string         dataset_name = 3;  // Dataset identifier
+  string         local_path   = 4;  // Local filesystem path
+  string         remote_url   = 5;  // Cloud storage URL
+}</code></pre>
+
+    <h4>DataFormat Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>FORMAT_HUGGINGFACE</code></td>
+          <td>HuggingFace Datasets format with Arrow backend (recommended)</td>
+        </tr>
+        <tr>
+          <td><code>FORMAT_CSV</code></td>
+          <td>Comma-separated values for simple tabular data</td>
+        </tr>
+        <tr>
+          <td><code>FORMAT_JSONL</code></td>
+          <td>JSON Lines for structured, schema-flexible records</td>
+        </tr>
+        <tr>
+          <td><code>FORMAT_PARQUET</code></td>
+          <td>Apache Parquet columnar format for efficient large-scale storage</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>StorageBackend Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>STORAGE_LOCAL</code></td>
+          <td>Local filesystem storage</td>
+        </tr>
+        <tr>
+          <td><code>STORAGE_CLOUD</code></td>
+          <td>Cloud storage (HuggingFace Hub, S3, GCS)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="training">Training</h3>
+
+    <p>The <code>Training</code> message configures the full training pipeline, including environment selection, training method, and simulator backend.</p>
+
+    <pre><code>message Training {
+  TrainingEnvironment environment        = 1;  // Sim or real
+  TrainingMethod      method             = 2;  // RL, imitation, or evaluation
+  SimulatorBackend    simulator_backend  = 3;  // MJX or Isaac Sim
+  RLConfig            rl_config          = 4;  // Reinforcement learning parameters
+  ImitationConfig     imitation_config   = 5;  // Imitation learning parameters
+  EvalConfig          eval_config        = 6;  // Evaluation parameters
+}</code></pre>
+
+    <h4>TrainingEnvironment Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ENV_SIMULATION</code></td>
+          <td>Train in simulated physics environment (MuJoCo)</td>
+        </tr>
+        <tr>
+          <td><code>ENV_REAL</code></td>
+          <td>Train on physical robot hardware</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>TrainingMethod Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>METHOD_RL</code></td>
+          <td>Reinforcement learning (PPO via JAX/Flax on MJX)</td>
+        </tr>
+        <tr>
+          <td><code>METHOD_IMITATION</code></td>
+          <td>Imitation learning from demonstration datasets</td>
+        </tr>
+        <tr>
+          <td><code>METHOD_EVAL</code></td>
+          <td>Evaluation of a trained model against benchmarks</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>SimulatorBackend Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>BACKEND_MJX</code></td>
+          <td>MuJoCo-XLA: GPU-accelerated parallel simulation (2048+ environments)</td>
+        </tr>
+        <tr>
+          <td><code>BACKEND_ISAAC</code></td>
+          <td>NVIDIA Isaac Sim: industrial-grade simulation with USD assets</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Training Sub-configurations</h4>
+
+    <pre><code>message RLConfig {
+  string algorithm          = 1;  // e.g., "PPO"
+  int32  num_envs           = 2;  // Parallel environments (e.g., 2048)
+  int32  total_timesteps    = 3;  // Total training steps
+  float  learning_rate      = 4;  // Optimizer learning rate
+  float  gamma              = 5;  // Discount factor
+  float  clip_range         = 6;  // PPO clipping parameter
+  int32  batch_size         = 7;  // Mini-batch size
+  string reward_function    = 8;  // Reward function identifier
+}
+
+message ImitationConfig {
+  string dataset_name       = 1;  // Dataset to train on
+  int32  num_epochs         = 2;  // Training epochs
+  float  learning_rate      = 3;  // Optimizer learning rate
+  int32  batch_size         = 4;  // Batch size
+  string loss_function      = 5;  // e.g., "mse", "l1"
+}
+
+message EvalConfig {
+  string model_checkpoint   = 1;  // Path to model weights
+  int32  num_episodes       = 2;  // Episodes to evaluate
+  repeated string metrics   = 3;  // e.g., ["success_rate", "avg_return"]
+}</code></pre>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 6: ROS2 Node Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="ros2-node-configuration">ROS2 Node Configuration</h2>
+
+    <p>Every hardware device, AI model, and system component in JOSHUA is backed by a ROS2 node. The <code>Node</code> proto provides a unified configuration for node identity, process type, communication quality, and topic mappings.</p>
+
+    <pre><code>message Node {
+  string              node_name     = 1;  // ROS2 node name
+  int32               node_id       = 2;  // Unique numeric identifier
+  NodeType            node_type     = 3;  // Process backend
+  QoSSettings         qos           = 4;  // Quality of Service profile
+  repeated Publisher   publishers   = 5;  // Outgoing topics
+  repeated Subscription subscriptions = 6; // Incoming topics
+}</code></pre>
+
+    <h4>NodeType Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CPP</code></td>
+          <td>C++ node (performance-critical: motor drivers, sensor I/O)</td>
+        </tr>
+        <tr>
+          <td><code>PYTHON</code></td>
+          <td>Python node (AI inference, data processing, prototyping)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>QoS Settings</h3>
+
+    <p>Quality of Service settings control the reliability and performance characteristics of ROS2 communication.</p>
+
+    <pre><code>message QoSSettings {
+  Reliability reliability = 1;  // RELIABLE or BEST_EFFORT
+  Durability  durability  = 2;  // VOLATILE or TRANSIENT_LOCAL
+  History     history     = 3;  // KEEP_LAST or KEEP_ALL
+  int32       depth       = 4;  // Queue depth (e.g., 10)
+  Liveliness  liveliness  = 5;  // AUTOMATIC or MANUAL_BY_TOPIC
+}</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Setting</th>
+          <th>Options</th>
+          <th>Default</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>reliability</code></td>
+          <td><code>RELIABLE</code>, <code>BEST_EFFORT</code></td>
+          <td><code>RELIABLE</code></td>
+          <td>Use <code>BEST_EFFORT</code> for high-frequency sensor data</td>
+        </tr>
+        <tr>
+          <td><code>durability</code></td>
+          <td><code>VOLATILE</code>, <code>TRANSIENT_LOCAL</code></td>
+          <td><code>VOLATILE</code></td>
+          <td><code>TRANSIENT_LOCAL</code> caches last message for late subscribers</td>
+        </tr>
+        <tr>
+          <td><code>history</code></td>
+          <td><code>KEEP_LAST</code>, <code>KEEP_ALL</code></td>
+          <td><code>KEEP_LAST</code></td>
+          <td><code>KEEP_ALL</code> requires careful memory management</td>
+        </tr>
+        <tr>
+          <td><code>depth</code></td>
+          <td>Positive integer</td>
+          <td><code>10</code></td>
+          <td>Queue depth for <code>KEEP_LAST</code> history policy</td>
+        </tr>
+        <tr>
+          <td><code>liveliness</code></td>
+          <td><code>AUTOMATIC</code>, <code>MANUAL_BY_TOPIC</code></td>
+          <td><code>AUTOMATIC</code></td>
+          <td>Controls node liveness detection</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Publisher and Subscription</h3>
+
+    <p>Publishers and subscriptions define the topic interface for each node. JOSHUA supports all 91 standard ROS2 message types.</p>
+
+    <pre><code>message Publisher {
+  DataType data_type       = 1;  // One of 91 ROS2 message types
+  string   topic_name      = 2;  // Topic path (e.g., "/arm/joint_states")
+  float    publish_rate_hz = 3;  // Publishing frequency in Hz
+}
+
+message Subscription {
+  DataType data_type       = 1;  // Expected message type
+  string   topic_name      = 2;  // Topic to subscribe to
+}</code></pre>
+
+    <h4>DataType Enum (Selected Types)</h4>
+
+    <p>The <code>DataType</code> enum maps to all 91 standard ROS2 message types. Below is a representative subset organized by category:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>DataType Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sensor</td>
+          <td><code>IMAGE</code>, <code>COMPRESSED_IMAGE</code>, <code>CAMERA_INFO</code>, <code>IMU</code>, <code>LASER_SCAN</code>, <code>POINT_CLOUD2</code>, <code>RANGE</code>, <code>TEMPERATURE</code>, <code>FLUID_PRESSURE</code>, <code>ILLUMINANCE</code>, <code>MAGNETIC_FIELD</code>, <code>RELATIVE_HUMIDITY</code>, <code>NAV_SAT_FIX</code>, <code>JOY</code>, <code>BATTERY_STATE</code></td>
+        </tr>
+        <tr>
+          <td>Joint / Actuator</td>
+          <td><code>JOINT_STATE</code>, <code>JOINT_TRAJECTORY</code>, <code>MULTI_DOF_JOINT_STATE</code></td>
+        </tr>
+        <tr>
+          <td>Geometry</td>
+          <td><code>TWIST</code>, <code>TWIST_STAMPED</code>, <code>POSE</code>, <code>POSE_STAMPED</code>, <code>POSE_ARRAY</code>, <code>WRENCH</code>, <code>WRENCH_STAMPED</code>, <code>TRANSFORM</code>, <code>TRANSFORM_STAMPED</code>, <code>VECTOR3</code>, <code>QUATERNION</code>, <code>ACCEL</code>, <code>ACCEL_STAMPED</code></td>
+        </tr>
+        <tr>
+          <td>Navigation</td>
+          <td><code>ODOMETRY</code>, <code>PATH</code>, <code>OCCUPANCY_GRID</code>, <code>MAP_META_DATA</code>, <code>GRID_CELLS</code></td>
+        </tr>
+        <tr>
+          <td>Standard</td>
+          <td><code>BOOL</code>, <code>INT32</code>, <code>INT64</code>, <code>FLOAT32</code>, <code>FLOAT64</code>, <code>STRING</code>, <code>BYTE_MULTI_ARRAY</code>, <code>FLOAT32_MULTI_ARRAY</code>, <code>FLOAT64_MULTI_ARRAY</code>, <code>INT32_MULTI_ARRAY</code></td>
+        </tr>
+        <tr>
+          <td>Diagnostic</td>
+          <td><code>DIAGNOSTIC_STATUS</code>, <code>DIAGNOSTIC_ARRAY</code>, <code>LOG</code></td>
+        </tr>
+        <tr>
+          <td>Visualization</td>
+          <td><code>MARKER</code>, <code>MARKER_ARRAY</code>, <code>IMAGE_MARKER</code></td>
+        </tr>
+        <tr>
+          <td>TF / Clock</td>
+          <td><code>TF_MESSAGE</code>, <code>CLOCK</code>, <code>TIME</code>, <code>DURATION</code>, <code>HEADER</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>Tip: Choosing QoS for Sensor Data</strong>
+      For high-frequency camera or LiDAR data, use <code>BEST_EFFORT</code> reliability with <code>KEEP_LAST</code> history and a depth of 1. This avoids buffering stale frames and minimizes latency. For joint commands, use <code>RELIABLE</code> to ensure no commands are dropped.
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 7: Communication Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="communication-configuration">Communication Configuration</h2>
+
+    <p>The <code>Comm</code> message (defined in <code>comm.proto</code>) configures the physical communication interface between the host and hardware devices.</p>
+
+    <pre><code>// comm.proto
+message Comm {
+  oneof interface {
+    Serial serial = 1;   // Wired serial (USB/UART)
+    BLE    ble    = 2;   // Bluetooth Low Energy
+  }
+}
+
+message Serial {
+  string port     = 1;   // Device path (e.g., "/dev/ttyACM0")
+  int32  baudrate = 2;   // Baud rate (e.g., 1000000)
+}
+
+message BLE {
+  string device_name = 1;   // BLE device name to connect to
+  string service_uuid = 2;  // BLE service UUID
+}</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Interface</th>
+          <th>Key Parameters</th>
+          <th>Typical Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Serial</code></td>
+          <td><code>port</code>, <code>baudrate</code></td>
+          <td>STS3215 servo bus at 1 Mbps, Arduino sensors, LiDAR over UART</td>
+        </tr>
+        <tr>
+          <td><code>BLE</code></td>
+          <td><code>device_name</code>, <code>service_uuid</code></td>
+          <td>LEGO SPIKE hub via Pybricks BLE, wireless sensor modules</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Example serial communication for an STS3215 servo bus:</p>
+
+    <pre><code>comm {
+  serial {
+    port: "/dev/ttyACM0"
+    baudrate: 1000000
+  }
+}</code></pre>
+
+    <p>Example BLE communication for a SPIKE hub:</p>
+
+    <pre><code>comm {
+  ble {
+    device_name: "Pybricks Hub"
+    service_uuid: "c5f50001-8280-46da-89f4-6d8051e4aeef"
+  }
+}</code></pre>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 8: Simulation Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="simulation-configuration">Simulation Configuration</h2>
+
+    <p>The <code>SimulationConfig</code> message (defined in <code>simulation.proto</code>) controls the MuJoCo physics simulation engine. It supports four distinct operational modes and provides configuration for model loading and digital twin topic mapping.</p>
+
+    <pre><code>message SimulationConfig {
+  SimulationMode mode       = 1;  // Simulation operational mode
+  string         model_path = 2;  // Path to MJCF XML model file
+  repeated MirrorTopicMapping mirror_topic_mappings = 3;  // Digital twin mappings
+}
+
+message MirrorTopicMapping {
+  string ros_topic       = 1;  // ROS2 topic to subscribe to
+  string mujoco_actuator = 2;  // MuJoCo actuator name to drive
+}</code></pre>
+
+    <h4>SimulationMode Enum</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Enum Value</th>
+          <th>Description</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>INTERACTIVE</code></td>
+          <td>GUI window with direct mouse/keyboard interaction</td>
+          <td>Manual testing, environment exploration, debugging physics</td>
+        </tr>
+        <tr>
+          <td><code>PASSIVE</code></td>
+          <td>Read-only visualization, replays pre-recorded trajectories</td>
+          <td>Reviewing recorded episodes, trajectory validation</td>
+        </tr>
+        <tr>
+          <td><code>MIRROR</code></td>
+          <td>Digital twin: subscribes to ROS2 topics and mirrors real robot</td>
+          <td>Real-time visualization of physical robot state, remote monitoring</td>
+        </tr>
+        <tr>
+          <td><code>OFFSCREEN</code></td>
+          <td>Headless rendering without GUI window</td>
+          <td>Data generation, automated testing, CI/CD pipeline validation</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Example simulation configuration for a digital twin setup:</p>
+
+    <pre><code>simulation {
+  mode: MIRROR
+  model_path: "models/so_arm100/scene.xml"
+  mirror_topic_mappings {
+    ros_topic: "/follower/joint_states"
+    mujoco_actuator: "joint_1"
+  }
+  mirror_topic_mappings {
+    ros_topic: "/follower/joint_states"
+    mujoco_actuator: "joint_2"
+  }
+  mirror_topic_mappings {
+    ros_topic: "/follower/joint_states"
+    mujoco_actuator: "joint_3"
+  }
+  mirror_topic_mappings {
+    ros_topic: "/follower/joint_states"
+    mujoco_actuator: "joint_4"
+  }
+  mirror_topic_mappings {
+    ros_topic: "/follower/joint_states"
+    mujoco_actuator: "joint_5"
+  }
+  mirror_topic_mappings {
+    ros_topic: "/follower/joint_states"
+    mujoco_actuator: "gripper"
+  }
+}</code></pre>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 9: Example Configuration -->
+    <!-- ============================================================ -->
+    <h2 id="example-configuration">Example Configuration</h2>
+
+    <p>Below is a complete <code>.pbtxt</code> configuration for a teleoperation setup with leader and follower SO-ARM100 arms, a top-mounted camera, and data recording.</p>
+
+    <pre><code># JOSHUA Configuration: Leader-Follower Teleoperation with SO-ARM100
+# File: configs/teleop_so_arm100.pbtxt
+
+general {
+  mode: MODE_TELEOPERATE
+  robot_type: "SO-ARM100"
+  name: "leader_follower_teleop"
+  id: "joshua-teleop-001"
+}
+
+robot {
+  # Leader arm (input device)
+  actions {
+    node {
+      node_name: "leader_arm"
+      node_id: 1
+      node_type: CPP
+      qos {
+        reliability: RELIABLE
+        durability: VOLATILE
+        history: KEEP_LAST
+        depth: 10
+        liveliness: AUTOMATIC
+      }
+      publishers {
+        data_type: JOINT_STATE
+        topic_name: "/leader/joint_states"
+        publish_rate_hz: 50.0
+      }
+    }
+    action_type: ACTION_LEADER
+    sts3215_config {
+      comm {
+        serial {
+          port: "/dev/ttyACM0"
+          baudrate: 1000000
+        }
+      }
+      motor_ids: [1, 2, 3, 4, 5, 6]
+      position_min: 0
+      position_max: 4095
+      velocity: 0
+      acceleration: 0
+    }
+  }
+
+  # Follower arm (actuated output)
+  actions {
+    node {
+      node_name: "follower_arm"
+      node_id: 2
+      node_type: CPP
+      qos {
+        reliability: RELIABLE
+        durability: VOLATILE
+        history: KEEP_LAST
+        depth: 10
+        liveliness: AUTOMATIC
+      }
+      publishers {
+        data_type: JOINT_STATE
+        topic_name: "/follower/joint_states"
+        publish_rate_hz: 50.0
+      }
+      subscriptions {
+        data_type: JOINT_STATE
+        topic_name: "/leader/joint_states"
+      }
+    }
+    action_type: ACTION_FOLLOWER
+    sts3215_config {
+      comm {
+        serial {
+          port: "/dev/ttyACM1"
+          baudrate: 1000000
+        }
+      }
+      motor_ids: [1, 2, 3, 4, 5, 6]
+      position_min: 0
+      position_max: 4095
+      velocity: 1000
+      acceleration: 200
+    }
+  }
+
+  # Top-mounted camera
+  perceptions {
+    node {
+      node_name: "camera_top"
+      node_id: 3
+      node_type: CPP
+      qos {
+        reliability: BEST_EFFORT
+        durability: VOLATILE
+        history: KEEP_LAST
+        depth: 1
+        liveliness: AUTOMATIC
+      }
+      publishers {
+        data_type: IMAGE
+        topic_name: "/camera/top/image_raw"
+        publish_rate_hz: 30.0
+      }
+    }
+    perception_type: PERCEPTION_CAMERA
+    camera_config {
+      device_id: 0
+      width: 640
+      height: 480
+      fps: 30
+      pixel_format: "MJPG"
+      brightness: 128
+      contrast: 128
+      saturation: 128
+      exposure: -6
+    }
+  }
+}
+
+ai {
+  data_store {
+    format: FORMAT_HUGGINGFACE
+    storage: STORAGE_LOCAL
+    dataset_name: "so_arm100_teleop_demos"
+    local_path: "/data/datasets/so_arm100_teleop"
+  }
+}</code></pre>
+
+    <div class="callout callout-info">
+      <strong>Configuration Validation</strong>
+      The Node Generator validates the configuration at startup. Common checks include: unique node IDs, no serial port conflicts, matching publisher/subscriber data types across topics, and valid enum values. If validation fails, the system prints a detailed error message and exits before initializing any hardware.
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 10: Configuration Presets -->
+    <!-- ============================================================ -->
+    <h2 id="configuration-presets">Configuration Presets Reference</h2>
+
+    <p>JOSHUA ships with over 25 pre-built configuration presets covering common robot setups, training scenarios, and simulation environments. Presets are stored in the <code>configs/</code> directory and can be used directly or as templates for custom configurations.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>teleop_so_arm100.pbtxt</code></td>
+          <td>Teleoperate</td>
+          <td>Leader-follower SO-ARM100 teleoperation with dual serial ports</td>
+        </tr>
+        <tr>
+          <td><code>teleop_so_arm100_camera.pbtxt</code></td>
+          <td>Teleoperate</td>
+          <td>Teleoperation with top and wrist cameras for data recording</td>
+        </tr>
+        <tr>
+          <td><code>teleop_xbox_controller.pbtxt</code></td>
+          <td>Teleoperate</td>
+          <td>Xbox controller input to single arm via gamepad mapping</td>
+        </tr>
+        <tr>
+          <td><code>teleop_keyboard.pbtxt</code></td>
+          <td>Teleoperate</td>
+          <td>Keyboard-based joint control for simple testing</td>
+        </tr>
+        <tr>
+          <td><code>teleop_dual_arm.pbtxt</code></td>
+          <td>Teleoperate</td>
+          <td>Dual leader-follower arms (bimanual manipulation)</td>
+        </tr>
+        <tr>
+          <td><code>inference_smolvla.pbtxt</code></td>
+          <td>Inference</td>
+          <td>SmolVLA model inference with dual camera input</td>
+        </tr>
+        <tr>
+          <td><code>inference_smolvla_jetson.pbtxt</code></td>
+          <td>Inference</td>
+          <td>SmolVLA optimized for NVIDIA Jetson Orin Nano deployment</td>
+        </tr>
+        <tr>
+          <td><code>inference_random_noise.pbtxt</code></td>
+          <td>Inference</td>
+          <td>Random action baseline for testing inference pipeline</td>
+        </tr>
+        <tr>
+          <td><code>training_rl_mjx.pbtxt</code></td>
+          <td>Training</td>
+          <td>PPO reinforcement learning on MuJoCo-XLA (2048 envs)</td>
+        </tr>
+        <tr>
+          <td><code>training_rl_isaac.pbtxt</code></td>
+          <td>Training</td>
+          <td>RL training using NVIDIA Isaac Sim backend</td>
+        </tr>
+        <tr>
+          <td><code>training_imitation.pbtxt</code></td>
+          <td>Training</td>
+          <td>Imitation learning from HuggingFace demonstration dataset</td>
+        </tr>
+        <tr>
+          <td><code>training_eval.pbtxt</code></td>
+          <td>Training</td>
+          <td>Model evaluation with success rate and return metrics</td>
+        </tr>
+        <tr>
+          <td><code>calibrate_so_arm100.pbtxt</code></td>
+          <td>Calibration</td>
+          <td>SO-ARM100 servo motor calibration with GUI output</td>
+        </tr>
+        <tr>
+          <td><code>calibrate_spike.pbtxt</code></td>
+          <td>Calibration</td>
+          <td>LEGO SPIKE motor calibration via BLE</td>
+        </tr>
+        <tr>
+          <td><code>test_single_motor.pbtxt</code></td>
+          <td>Test</td>
+          <td>Individual STS3215 servo test with oscillation pattern</td>
+        </tr>
+        <tr>
+          <td><code>test_camera.pbtxt</code></td>
+          <td>Test</td>
+          <td>Camera feed validation with OpenCV display</td>
+        </tr>
+        <tr>
+          <td><code>test_mock_hardware.pbtxt</code></td>
+          <td>Test</td>
+          <td>Full pipeline test with mock motors (no hardware required)</td>
+        </tr>
+        <tr>
+          <td><code>test_lidar.pbtxt</code></td>
+          <td>Test</td>
+          <td>LiDAR sensor validation and scan visualization</td>
+        </tr>
+        <tr>
+          <td><code>test_spike_ble.pbtxt</code></td>
+          <td>Test</td>
+          <td>LEGO SPIKE BLE connection and motor test</td>
+        </tr>
+        <tr>
+          <td><code>data_store_record.pbtxt</code></td>
+          <td>Data Store</td>
+          <td>Record teleoperation episodes to local HuggingFace dataset</td>
+        </tr>
+        <tr>
+          <td><code>data_store_upload.pbtxt</code></td>
+          <td>Data Store</td>
+          <td>Upload local dataset to HuggingFace Hub</td>
+        </tr>
+        <tr>
+          <td><code>data_store_replay.pbtxt</code></td>
+          <td>Data Store</td>
+          <td>Replay recorded episodes on physical robot</td>
+        </tr>
+        <tr>
+          <td><code>sim_interactive.pbtxt</code></td>
+          <td>Simulation</td>
+          <td>Interactive MuJoCo GUI with mouse/keyboard control</td>
+        </tr>
+        <tr>
+          <td><code>sim_passive.pbtxt</code></td>
+          <td>Simulation</td>
+          <td>Passive trajectory replay visualization</td>
+        </tr>
+        <tr>
+          <td><code>sim_mirror.pbtxt</code></td>
+          <td>Simulation</td>
+          <td>Digital twin mirroring real robot via ROS2 topics</td>
+        </tr>
+        <tr>
+          <td><code>sim_offscreen.pbtxt</code></td>
+          <td>Simulation</td>
+          <td>Headless rendering for CI/CD and data generation</td>
+        </tr>
+        <tr>
+          <td><code>sim_lekoch.pbtxt</code></td>
+          <td>Simulation</td>
+          <td>LeKoch mobile robot simulation in MuJoCo</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>Tip: Creating Custom Configurations</strong>
+      The easiest way to create a new configuration is to copy the closest preset and modify it. All presets are located in the <code>configs/</code> directory of the repository. Use <code>joshua --config configs/your_custom.pbtxt</code> to launch with your configuration.
+    </div>
+
+    <p>To run a preset configuration:</p>
+
+    <pre><code># Run with a preset configuration
+joshua --config configs/teleop_so_arm100.pbtxt
+
+# Run with verbose logging for debugging
+joshua --config configs/test_mock_hardware.pbtxt --log-level DEBUG
+
+# Validate a configuration without launching
+joshua --config configs/your_custom.pbtxt --validate-only</code></pre>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

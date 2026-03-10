@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deployment &amp; CI/CD - JOSHUA Documentation</title>
+  <meta name="description" content="JOSHUA deployment documentation covering Docker containerization, cross-compilation for ARM64, Bazel build system, GitHub Actions CI/CD, and production deployment workflows.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html">Architecture</a></li>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="robot-layer.html">Robot Layer</a></li>
+      <li><a href="ai-system.html">AI System</a></li>
+      <li><a href="simulation.html">Simulation</a></li>
+      <li><a href="deployment.html" class="active">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Docs Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>On This Page</h4>
+      <a href="#overview">Overview</a>
+      <a href="#docker-containers">Docker Containers</a>
+      <a href="#cross-compilation">Cross-Compilation</a>
+      <a href="#build-system">Build System (Bazel)</a>
+      <a href="#cicd-pipeline">CI/CD Pipeline</a>
+      <a href="#setup-script">Setup Script</a>
+      <a href="#code-quality">Code Quality</a>
+      <a href="#platform-support">Platform Support Matrix</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Documentation</h4>
+      <a href="architecture.html">Architecture</a>
+      <a href="getting-started.html">Getting Started</a>
+      <a href="configuration.html">Configuration</a>
+      <a href="robot-layer.html">Robot Layer</a>
+      <a href="ai-system.html">AI System</a>
+      <a href="simulation.html">Simulation</a>
+      <a href="deployment.html" class="active">Deployment</a>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main class="docs-content">
+    <h1>Deployment &amp; CI/CD</h1>
+    <p>
+      JOSHUA provides a comprehensive deployment infrastructure that supports cross-platform builds, Docker containerization, and automated continuous integration. This page covers every aspect of building, testing, and deploying the JOSHUA framework across multiple architectures and operating system versions.
+    </p>
+
+    <!-- ============================================================ -->
+    <h2 id="overview">Overview</h2>
+    <p>
+      JOSHUA targets cross-platform deployment across both <strong>AMD64</strong> and <strong>ARM64</strong> architectures. The framework uses <strong>Docker</strong> for environment isolation and reproducibility, <strong>Bazel</strong> for hermetic builds, and <strong>GitHub Actions</strong> for continuous integration and automated testing.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>Key Design Principles</strong>
+      The deployment system is built around three core principles: (1) hermetic, reproducible builds via Bazel so that artifacts are identical regardless of the host; (2) multi-platform Docker images that encapsulate all ROS2 and system dependencies; and (3) automated CI pipelines that validate every pull request before merge.
+    </div>
+
+    <p>The deployment stack consists of the following layers:</p>
+    <ul>
+      <li><strong>Docker Compose</strong> &mdash; Defines multi-service container configurations for development and production.</li>
+      <li><strong>Bazel Build System</strong> &mdash; Hermetic builds with cross-compilation support for ARM64 targets.</li>
+      <li><strong>GitHub Actions CI/CD</strong> &mdash; Automated build, test, and lint pipelines triggered on pull requests.</li>
+      <li><strong>Setup Scripts</strong> &mdash; Automated environment provisioning for bare-metal and container-based deployments.</li>
+      <li><strong>Code Quality Gates</strong> &mdash; Pre-commit hooks and linting enforce code standards before merge.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 id="docker-containers">Docker Containers</h2>
+    <p>
+      JOSHUA uses Docker Compose to define a multi-service container topology. The <code>docker-compose.yml</code> file defines <strong>five services</strong> covering production, experimental, ARM64, and UI workloads. A separate <code>docker-compose.dev.yml</code> file provides development-specific overrides.
+    </p>
+
+    <h3>Service Definitions</h3>
+    <p>The five services defined in <code>docker-compose.yml</code> are:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Base Image</th>
+          <th>ROS2</th>
+          <th>Python</th>
+          <th>Architecture</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>joshua-u22</code></td>
+          <td>Ubuntu 22.04</td>
+          <td>Humble</td>
+          <td>3.10</td>
+          <td>AMD64</td>
+          <td>Production</td>
+        </tr>
+        <tr>
+          <td><code>joshua-u24</code></td>
+          <td>Ubuntu 24.04</td>
+          <td>Jazzy</td>
+          <td>3.12</td>
+          <td>AMD64</td>
+          <td>Experimental</td>
+        </tr>
+        <tr>
+          <td><code>joshua-u22-arm64</code></td>
+          <td>Ubuntu 22.04</td>
+          <td>Humble</td>
+          <td>3.10</td>
+          <td>ARM64</td>
+          <td>Jetson Orin Nano</td>
+        </tr>
+        <tr>
+          <td><code>joshua-u24-arm64</code></td>
+          <td>Ubuntu 24.04</td>
+          <td>Jazzy</td>
+          <td>3.12</td>
+          <td>ARM64</td>
+          <td>ARM64 Experimental</td>
+        </tr>
+        <tr>
+          <td><code>joshua-ui</code></td>
+          <td>nginx</td>
+          <td>&mdash;</td>
+          <td>&mdash;</td>
+          <td>AMD64</td>
+          <td>React Web UI (port 3000)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Development Containers</h3>
+    <p>
+      All development containers (<code>joshua-u22</code>, <code>joshua-u24</code>, and the ARM64 variants) share a common configuration profile optimized for robotics development:
+    </p>
+    <ul>
+      <li><strong>Privileged mode</strong> &mdash; Required for direct hardware access to USB devices (servo controllers, cameras, LiDAR).</li>
+      <li><strong>Host networking</strong> &mdash; Enables ROS2 DDS discovery and multicast communication without port mapping overhead.</li>
+      <li><strong><code>/dev</code> mount</strong> &mdash; Bind-mounts the host <code>/dev</code> directory to allow access to serial ports, video devices, and input devices.</li>
+      <li><strong>Persistent Bazel cache volumes</strong> &mdash; Named Docker volumes are mounted for the Bazel output base and repository cache, preventing full rebuilds across container restarts.</li>
+    </ul>
+
+    <pre><code># Example: Start the production development container
+docker compose up -d joshua-u22
+
+# Example: Start with development overrides
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d joshua-u22
+
+# Example: Start the web UI container
+docker compose up -d joshua-ui
+# Accessible at http://localhost:3000</code></pre>
+
+    <h3>Web UI Container</h3>
+    <p>
+      The <code>joshua-ui</code> service runs the React web interface inside an <strong>nginx</strong> container. It serves the production build of the web UI on <strong>port 3000</strong> and proxies WebSocket connections to the Zenoh bridge for real-time ROS2 topic streaming.
+    </p>
+
+    <h3>Development Compose File</h3>
+    <p>
+      The <code>docker-compose.dev.yml</code> file extends the base configuration with development-specific settings such as source code bind mounts, additional environment variables for debugging, and X11 forwarding for GUI applications (Qt6 control panel, MuJoCo visualization).
+    </p>
+
+    <!-- ============================================================ -->
+    <h2 id="cross-compilation">Cross-Compilation</h2>
+    <p>
+      JOSHUA supports cross-compilation for <strong>ARM64</strong> targets, primarily the <strong>NVIDIA Jetson Orin Nano</strong> edge computing platform used for on-robot inference. The cross-compilation infrastructure is built on Bazel's platform system and conditional compilation features.
+    </p>
+
+    <h3>Bazel Platforms</h3>
+    <p>
+      Three Bazel platform definitions are provided for targeting different architectures:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>CPU Architecture</th>
+          <th>OS</th>
+          <th>Target Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>jetson_orin_nano</code></td>
+          <td>ARM64 (aarch64)</td>
+          <td>Linux</td>
+          <td>NVIDIA Jetson Orin Nano edge device</td>
+        </tr>
+        <tr>
+          <td><code>cpu_x86_64</code></td>
+          <td>AMD64 (x86_64)</td>
+          <td>Linux</td>
+          <td>Standard desktop/server workstation</td>
+        </tr>
+        <tr>
+          <td><code>cpu_aarch64</code></td>
+          <td>ARM64 (aarch64)</td>
+          <td>Linux</td>
+          <td>Generic ARM64 Linux target</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Conditional Compilation</h3>
+    <p>
+      The <code>.bazelrc</code> file defines config settings that enable conditional compilation based on the target platform. This allows architecture-specific code paths (e.g., NEON SIMD on ARM64, AVX on x86_64) to be selected at build time:
+    </p>
+    <pre><code># Build for Jetson Orin Nano
+bazel build --config=jetson //joshua/robot:all
+
+# Build for standard AMD64
+bazel build --config=u22 //joshua/robot:all</code></pre>
+
+    <h3>Pre-Built Distribution Tarballs</h3>
+    <p>
+      For environments where building from source is impractical, JOSHUA provides pre-built distribution tarballs in the <code>dist/</code> directory:
+    </p>
+    <ul>
+      <li><code>dist/u22/x86/</code> &mdash; Ubuntu 22.04 AMD64 pre-built binaries</li>
+      <li><code>dist/u22/arm64/</code> &mdash; Ubuntu 22.04 ARM64 pre-built binaries (Jetson Orin Nano)</li>
+      <li><code>dist/u24/arm64/</code> &mdash; Ubuntu 24.04 ARM64 pre-built binaries</li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <strong>Tip: Jetson Deployment</strong>
+      For deploying to the NVIDIA Jetson Orin Nano, use the pre-built ARM64 tarballs from <code>dist/u22/arm64/</code> or build from source inside the <code>joshua-u22-arm64</code> Docker container. The Jetson platform definition automatically configures CUDA and TensorRT paths for the Orin Nano's GPU.
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="build-system">Build System (Bazel)</h2>
+    <p>
+      JOSHUA uses <strong>Bazel 8.3.1</strong> (managed via <strong>Bazelisk</strong>) as its primary build system. Bazel provides hermetic, reproducible builds with built-in support for cross-compilation, remote caching, and multi-language projects (C++, Python, Protocol Buffers).
+    </p>
+
+    <h3>MODULE.bazel and Dependencies</h3>
+    <p>
+      The <code>MODULE.bazel</code> file declares all external dependencies using Bazel's Bzlmod system. All dependencies are resolved hermetially &mdash; they are downloaded and built from source at pinned versions, ensuring reproducibility across machines:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Dependency</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>abseil-cpp</code></td>
+          <td>Core C++ utilities (strings, containers, synchronization)</td>
+        </tr>
+        <tr>
+          <td><code>protobuf</code></td>
+          <td>Protocol Buffers serialization for configuration and messages</td>
+        </tr>
+        <tr>
+          <td><code>gtest</code></td>
+          <td>Google Test framework for C++ unit testing</td>
+        </tr>
+        <tr>
+          <td><code>pybind11</code></td>
+          <td>C++/Python interop for AI inference bridge</td>
+        </tr>
+        <tr>
+          <td><code>boost.asio</code></td>
+          <td>Asynchronous I/O for serial communication (servo controllers)</td>
+        </tr>
+        <tr>
+          <td><code>gflags</code></td>
+          <td>Command-line flag parsing</td>
+        </tr>
+        <tr>
+          <td><code>glog</code></td>
+          <td>Google logging library</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Bazel Rule Sets</h3>
+    <p>
+      JOSHUA uses the following Bazel rule sets to build different target types:
+    </p>
+    <ul>
+      <li><strong><code>rules_cc</code></strong> &mdash; C++ compilation rules for robot drivers, node generator, and control panel.</li>
+      <li><strong><code>rules_python</code></strong> &mdash; Python rules for AI inference, simulation scripts, and data processing.</li>
+      <li><strong><code>rules_proto</code></strong> &mdash; Protocol Buffers compilation for configuration schema and ROS2 message generation.</li>
+      <li><strong><code>rules_pkg</code></strong> &mdash; Packaging rules for creating distribution tarballs and Debian packages.</li>
+    </ul>
+
+    <h3>Hermetic Python Toolchain</h3>
+    <p>
+      Bazel manages two hermetic Python toolchains to match the target Ubuntu versions:
+    </p>
+    <ul>
+      <li><strong>Python 3.10</strong> &mdash; Used with Ubuntu 22.04 (ROS2 Humble) builds via <code>--config=u22</code>.</li>
+      <li><strong>Python 3.12</strong> &mdash; Used with Ubuntu 24.04 (ROS2 Jazzy) builds via <code>--config=u24</code>.</li>
+    </ul>
+    <p>
+      The Python toolchains are downloaded and managed by Bazel, ensuring that the correct interpreter version is always used regardless of what is installed on the host system.
+    </p>
+
+    <h3>OS-Specific Configurations</h3>
+    <p>
+      The <code>.bazelrc</code> file provides OS-specific build configurations that set the correct compiler flags, Python version, and ROS2 distribution paths:
+    </p>
+    <pre><code># Ubuntu 22.04 with ROS2 Humble
+bazel build --config=u22 //joshua/...
+
+# Ubuntu 24.04 with ROS2 Jazzy
+bazel build --config=u24 //joshua/...
+
+# Run all tests
+bazel test --config=u22 //...</code></pre>
+
+    <h3>C++ Standard and Compiler</h3>
+    <p>
+      All C++ targets are compiled with the <strong>C++17 standard</strong> using the system GCC compiler. The <code>.bazelrc</code> file sets <code>--cxxopt=-std=c++17</code> globally. The system GCC is used (rather than a hermetic toolchain) to ensure ABI compatibility with system-installed ROS2 libraries.
+    </p>
+
+    <!-- ============================================================ -->
+    <h2 id="cicd-pipeline">CI/CD Pipeline</h2>
+    <p>
+      JOSHUA uses <strong>GitHub Actions</strong> for continuous integration. The pipeline is defined in <code>.github/workflows/ci.yml</code> and runs automated builds and tests on every pull request.
+    </p>
+
+    <h3>Trigger Conditions</h3>
+    <ul>
+      <li><strong>Pull requests</strong> targeting the <code>develop</code> branch &mdash; Every PR is validated before merge.</li>
+      <li><strong>Manual dispatch</strong> &mdash; The workflow can be triggered manually via the GitHub Actions UI for ad-hoc testing.</li>
+    </ul>
+
+    <h3>Runner Environment</h3>
+    <p>
+      The CI pipeline runs on <strong><code>ubuntu-22.04</code></strong> GitHub-hosted runners. This matches the primary production target and ensures that tests run in an environment identical to deployment.
+    </p>
+
+    <h3>Pipeline Steps</h3>
+    <p>
+      The CI workflow executes the following steps in order:
+    </p>
+    <ol>
+      <li>
+        <strong>Checkout</strong> &mdash; Clones the repository with full history for accurate change detection.
+      </li>
+      <li>
+        <strong>Disk Cleanup</strong> &mdash; Reclaims disk space on the GitHub runner by removing unused toolchains and SDKs. GitHub-hosted runners have limited disk space, and Bazel builds can consume significant storage.
+      </li>
+      <li>
+        <strong>Bazel Cache Restoration</strong> &mdash; Restores the Bazel build cache from GitHub Actions cache, keyed on <code>MODULE.bazel.lock</code>. When dependencies change, the cache key changes and a fresh cache is built. This dramatically reduces build times for PRs that don't modify dependencies.
+      </li>
+      <li>
+        <strong>Install Bazelisk</strong> &mdash; Downloads and installs Bazelisk, which automatically manages the correct Bazel version (8.3.1) as specified in the <code>.bazelversion</code> file.
+      </li>
+      <li>
+        <strong>Setup ROS2 Humble</strong> &mdash; Adds the ROS2 apt repository and installs the <code>ros-humble-desktop</code> meta-package along with development tools. Sources the ROS2 setup script to configure environment variables.
+      </li>
+      <li>
+        <strong>Install System Dependencies</strong> &mdash; Installs required system libraries:
+        <ul>
+          <li><code>Qt6</code> &mdash; For the desktop control panel GUI.</li>
+          <li><code>OpenCV</code> &mdash; For camera capture and image processing.</li>
+          <li><code>libevdev</code> &mdash; For gamepad/joystick input device handling.</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Run Tests</strong> &mdash; Executes the full test suite with Bazel:
+        <pre><code>bazel test //...</code></pre>
+        This command discovers and runs all test targets in the repository, including C++ unit tests (Google Test), Python tests, and integration tests.
+      </li>
+    </ol>
+
+    <div class="callout callout-info">
+      <strong>Cache Strategy</strong>
+      The Bazel cache is keyed on <code>MODULE.bazel.lock</code>, which changes whenever external dependencies are added or updated. This means that most PRs (which only change source code) benefit from a fully warm cache, reducing CI build times from ~30 minutes to ~5 minutes.
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="setup-script">Setup Script</h2>
+    <p>
+      The <code>scripts/setup.sh</code> script automates environment provisioning for both development workstations and production runtime environments. It handles the complete installation of all system dependencies, build tools, and framework prerequisites.
+    </p>
+
+    <h3>Environment Modes</h3>
+    <p>
+      The script supports two environment modes selected via the <code>--env</code> flag:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Flag</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Development</td>
+          <td><code>--env=dev</code></td>
+          <td>Full desktop environment with GUI tools, debugging utilities, IDE support, and all build dependencies. Includes Qt6 development headers, MuJoCo visualization, and X11 libraries.</td>
+        </tr>
+        <tr>
+          <td>Runtime</td>
+          <td><code>--env=runtime</code></td>
+          <td>Minimal runtime environment with only the libraries required to execute pre-built JOSHUA binaries. No build tools, no development headers, no GUI dependencies.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>OS Auto-Detection</h3>
+    <p>
+      The script automatically detects the Ubuntu version (<strong>22.04</strong> or <strong>24.04</strong>) and selects the appropriate package versions, ROS2 distribution (Humble or Jazzy), and Python version. Running on an unsupported OS version will produce a clear error message.
+    </p>
+
+    <h3>Installation Stages</h3>
+    <p>
+      The setup script executes the following stages:
+    </p>
+    <ol>
+      <li>
+        <strong>ROS2 Installation</strong> &mdash; Adds the official ROS2 apt repository, installs the desktop meta-package (dev mode) or base meta-package (runtime mode), and configures the environment.
+      </li>
+      <li>
+        <strong>OpenCV</strong> &mdash; Installs OpenCV libraries and Python bindings for camera capture and image processing.
+      </li>
+      <li>
+        <strong>Python Dependencies</strong> &mdash; Installs Python packages via pip, including PyTorch, HuggingFace Transformers, JAX, and other ML framework dependencies.
+      </li>
+      <li>
+        <strong>Docker</strong> &mdash; Installs Docker Engine and Docker Compose plugin, configures the current user for rootless Docker access.
+      </li>
+      <li>
+        <strong>Bazel</strong> &mdash; Installs Bazelisk (which manages Bazel versioning) and verifies the installation.
+      </li>
+    </ol>
+
+    <h3>NVIDIA Library Fixes</h3>
+    <p>
+      The setup script includes special handling for NVIDIA GPU libraries that are commonly misconfigured on Ubuntu systems:
+    </p>
+    <ul>
+      <li><strong>CuDNN</strong> &mdash; Resolves symlink issues and ensures the correct CuDNN version is linked for PyTorch and TensorRT.</li>
+      <li><strong>cusparseLt</strong> &mdash; Fixes missing library paths that cause PyTorch import failures on systems with CUDA 12.</li>
+      <li><strong>NCCL</strong> &mdash; Configures NCCL for multi-GPU training scenarios and resolves version conflicts between CUDA toolkit and PyTorch packages.</li>
+    </ul>
+
+    <pre><code># Full development setup on Ubuntu 22.04
+./scripts/setup.sh --env=dev
+
+# Minimal runtime setup on Ubuntu 24.04
+./scripts/setup.sh --env=runtime</code></pre>
+
+    <div class="callout callout-warn">
+      <strong>Warning: NVIDIA Fixes</strong>
+      The NVIDIA library fixes in <code>setup.sh</code> modify system library symlinks. These changes are idempotent and safe to run multiple times, but they require <code>sudo</code> access. If you are running in a Docker container, ensure the container has the necessary permissions.
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 id="code-quality">Code Quality</h2>
+    <p>
+      JOSHUA enforces code quality standards through pre-commit hooks, automated linting, and standardized PR templates. These gates ensure consistent code style and catch common issues before they reach the main codebase.
+    </p>
+
+    <h3>Pre-Commit Hooks</h3>
+    <p>
+      Two pre-commit hooks run automatically before each commit:
+    </p>
+    <ul>
+      <li>
+        <strong><code>lint_check.sh</code></strong> &mdash; Runs C++ and Python linters on staged files. Blocks the commit if any linting errors are found.
+      </li>
+      <li>
+        <strong><code>sample_check.py</code></strong> &mdash; Validates that configuration samples and example files are syntactically correct and conform to the Protocol Buffers schema.
+      </li>
+    </ul>
+
+    <h3>C++ Linting</h3>
+    <p>
+      C++ code is formatted and linted using <strong>clang-format-14</strong>. The project includes a <code>.clang-format</code> configuration file at the repository root that defines the coding style:
+    </p>
+    <pre><code># Run clang-format on all C++ files
+find . -name "*.cc" -o -name "*.h" | xargs clang-format-14 -i
+
+# Check formatting without modifying (used in CI)
+find . -name "*.cc" -o -name "*.h" | xargs clang-format-14 --dry-run --Werror</code></pre>
+
+    <h3>Python Linting</h3>
+    <p>
+      Python code is linted using <strong>ruff</strong>, a fast Python linter written in Rust. Ruff enforces PEP 8 style, import ordering, and common Python anti-patterns:
+    </p>
+    <pre><code># Run ruff linter
+ruff check .
+
+# Run ruff with auto-fix
+ruff check --fix .</code></pre>
+
+    <h3>PR Template</h3>
+    <p>
+      The repository includes a pull request template (<code>.github/PULL_REQUEST_TEMPLATE.md</code>) that standardizes PR descriptions with the following sections:
+    </p>
+    <ul>
+      <li><strong>Summary</strong> &mdash; A brief description of what the PR changes and why.</li>
+      <li><strong>Test</strong> &mdash; Description of how the changes were tested, including specific test commands and results.</li>
+    </ul>
+
+    <h3>.clang-format Configuration</h3>
+    <p>
+      The <code>.clang-format</code> file at the repository root defines the C++ code style. All contributors must format their code according to this configuration before submitting a PR. The pre-commit hook (<code>lint_check.sh</code>) enforces this automatically.
+    </p>
+
+    <!-- ============================================================ -->
+    <h2 id="platform-support">Platform Support Matrix</h2>
+    <p>
+      The following table summarizes the supported platform configurations, their associated ROS2 distributions, Python versions, and current support status:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Architecture</th>
+          <th>ROS2 Version</th>
+          <th>Python Version</th>
+          <th>Docker Service</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ubuntu 22.04</td>
+          <td>AMD64</td>
+          <td>Humble</td>
+          <td>3.10</td>
+          <td><code>joshua-u22</code></td>
+          <td><strong style="color: #38a169;">Production</strong></td>
+        </tr>
+        <tr>
+          <td>Ubuntu 22.04</td>
+          <td>ARM64</td>
+          <td>Humble</td>
+          <td>3.10</td>
+          <td><code>joshua-u22-arm64</code></td>
+          <td><strong style="color: #38a169;">Production</strong></td>
+        </tr>
+        <tr>
+          <td>Ubuntu 24.04</td>
+          <td>AMD64</td>
+          <td>Jazzy</td>
+          <td>3.12</td>
+          <td><code>joshua-u24</code></td>
+          <td><strong style="color: #d69e2e;">Experimental</strong></td>
+        </tr>
+        <tr>
+          <td>Ubuntu 24.04</td>
+          <td>ARM64</td>
+          <td>Jazzy</td>
+          <td>3.12</td>
+          <td><code>joshua-u24-arm64</code></td>
+          <td><strong style="color: #d69e2e;">Experimental</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <strong>Production vs Experimental</strong>
+      <strong>Production</strong> platforms are fully tested in CI, used in hardware deployments, and receive priority bug fixes. <strong>Experimental</strong> platforms are functional but may have occasional compatibility issues with newer ROS2 Jazzy APIs or Python 3.12 dependencies. They are intended for early adopters and forward-compatibility testing.
+    </div>
+
+    <p>
+      The Ubuntu 22.04 AMD64 configuration is the primary development and deployment target. It is the platform used in CI (<code>ubuntu-22.04</code> runners), and all hardware deployments (desktop workstations, Jetson Orin Nano) are validated against this configuration first.
+    </p>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

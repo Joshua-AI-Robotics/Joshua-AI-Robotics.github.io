@@ -1,35 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joshua AI Robotics</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-            color: #333;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        p {
-            font-size: 1.5rem;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOSHUA - Joint Open-Source Hub for Universal Automation</title>
+  <meta name="description" content="JOSHUA is an open-source modular robotics framework for AI-driven autonomous systems, providing standardized middleware for sensor fusion, hardware abstraction, and real-time inference.">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Joshua AI Robotics</h1>
-    <p>Joint Open Source Hub for Universal Automation</p>
-    <p>Construction in progress.</p>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="docs/architecture.html">Architecture</a></li>
+      <li><a href="docs/getting-started.html">Getting Started</a></li>
+      <li><a href="docs/configuration.html">Configuration</a></li>
+      <li><a href="docs/robot-layer.html">Robot Layer</a></li>
+      <li><a href="docs/ai-system.html">AI System</a></li>
+      <li><a href="docs/simulation.html">Simulation</a></li>
+      <li><a href="docs/deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>JOSHUA</h1>
+    <div class="hero-acronym">Joint Open-Source Hub for Universal Automation</div>
+    <p class="hero-subtitle">
+      A modular, open-source robotics framework that bridges high-level AI with physical hardware through standardized middleware, enabling rapid prototyping of autonomous robotic systems.
+    </p>
+    <div class="hero-buttons">
+      <a href="docs/getting-started.html" class="btn btn-primary">Get Started</a>
+      <a href="docs/architecture.html" class="btn btn-secondary">View Architecture</a>
+      <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="btn btn-secondary" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Source Code
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-number">500+</div>
+      <div class="stat-label">Commits</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">38</div>
+      <div class="stat-label">Pull Requests</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">91</div>
+      <div class="stat-label">ROS2 Message Types</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">25+</div>
+      <div class="stat-label">Config Presets</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">9</div>
+      <div class="stat-label">Months Active Development</div>
+    </div>
+  </div>
+</div>
+
+<!-- Overview -->
+<section class="section">
+  <div class="section-header">
+    <h2>Project Overview</h2>
+    <p>JOSHUA transforms a single configuration file into a fully operational robot system using ROS2, Protocol Buffers, and pluggable AI inference.</p>
+  </div>
+
+  <div class="diagram-section">
+    <img src="assets/images/project_joshua_core.png" alt="JOSHUA Core Architecture Diagram">
+    <div class="diagram-caption">Figure 1: JOSHUA Core Architecture &mdash; Configuration-driven robot system with modular layers for perception, action, AI inference, and simulation.</div>
+  </div>
+
+  <div class="card-grid mt-3">
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      </div>
+      <h3>Configuration-Driven Design</h3>
+      <p>Define your entire robot system&mdash;hardware, sensors, AI models, and operation mode&mdash;in a single Protocol Buffers text configuration file. No code changes required to reconfigure the system.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      </div>
+      <h3>Hardware Abstraction Layer</h3>
+      <p>Plug-and-play support for servo motors (STS3215, Pybricks SPIKE), cameras (OpenCV), encoders, and LiDAR sensors with factory-pattern instantiation and mock drivers for testing.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <h3>AI Inference Pipeline</h3>
+      <p>Extensible model architecture supporting SmolVLA (vision-language-action), decision transformers, and custom models. C++/Python interop via PyBind11 for real-time inference on edge devices.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      </div>
+      <h3>ROS2 Middleware Integration</h3>
+      <p>Built on ROS2 (Humble/Jazzy) with 91 standard message types, configurable QoS profiles, and automatic node lifecycle management through the Node Generator orchestrator.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      </div>
+      <h3>MuJoCo Simulation</h3>
+      <p>Physics-based simulation with interactive, passive, mirror (digital twin), and offscreen rendering modes. GPU-accelerated RL training via MuJoCo-XLA (MJX) and NVIDIA Isaac Sim integration.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <h3>Cross-Platform Deployment</h3>
+      <p>Supports AMD64 and ARM64 (NVIDIA Jetson Orin Nano) with Docker containers for Ubuntu 22.04/24.04. Bazel build system for reproducible, hermetic builds with cross-compilation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture Overview -->
+<section class="section" style="background: var(--color-bg-white); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); max-width: 100%; padding: 4rem 2rem;">
+  <div style="max-width: var(--max-width); margin: 0 auto;">
+    <div class="section-header">
+      <h2>System Architecture</h2>
+      <p>A layered, modular architecture where each component is independently configurable and replaceable.</p>
+    </div>
+
+    <div class="diagram-section">
+      <img src="assets/images/project_joshua_diagram_napkin.png" alt="JOSHUA System Architecture Diagram">
+      <div class="diagram-caption">Figure 2: JOSHUA System Architecture &mdash; Layered design from configuration through node orchestration to hardware interaction.</div>
+    </div>
+
+    <div class="card-grid mt-3">
+      <div class="card">
+        <h3>Configuration Layer</h3>
+        <p>Protocol Buffers schema defines the entire system: robot hardware, AI models, communication protocols, operation modes, and simulation settings. A single <code>.pbtxt</code> file configures the complete system.</p>
+      </div>
+      <div class="card">
+        <h3>Node Generator (Orchestrator)</h3>
+        <p>Central process manager that parses configuration, validates integrity (port conflicts, dependency checks), determines C++/Python backend per node, and manages the full lifecycle of child processes.</p>
+      </div>
+      <div class="card">
+        <h3>Robot Layer (HAL)</h3>
+        <p>Hardware Abstraction Layer with factory-pattern device instantiation. Supports multiple actuators, sensors, and communication protocols through standardized interfaces with both C++ and Python implementations.</p>
+      </div>
+      <div class="card">
+        <h3>AI Layer</h3>
+        <p>Model registry with base class architecture for pluggable inference models. Supports vision-language-action models (SmolVLA), reinforcement learning (PPO via JAX/Flax), and custom model integration.</p>
+      </div>
+      <div class="card">
+        <h3>Simulation Engine</h3>
+        <p>MuJoCo-based physics simulation with four operational modes. GPU-accelerated parallel training via MuJoCo-XLA (2048 parallel environments). NVIDIA Isaac Sim integration for industrial-grade simulation.</p>
+      </div>
+      <div class="card">
+        <h3>User Interfaces</h3>
+        <p>Qt6 C++ desktop control panel for real-time monitoring and calibration. React/TypeScript web UI with Zenoh bridge for distributed monitoring, topology visualization, and configuration management.</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-3">
+      <a href="docs/architecture.html" class="btn btn-primary">Explore Full Architecture Documentation</a>
+    </div>
+  </div>
+</section>
+
+<!-- Technology Stack -->
+<section class="section">
+  <div class="section-header">
+    <h2>Technology Stack</h2>
+    <p>Built on industry-standard technologies for robotics, AI, and systems engineering.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Core Languages</h3>
+      <div class="tech-badges">
+        <span class="tech-badge">C++17</span>
+        <span class="tech-badge">Python 3.10/3.12</span>
+        <span class="tech-badge">TypeScript</span>
+        <span class="tech-badge">Protocol Buffers</span>
+      </div>
+      <p>C++ for performance-critical robot drivers and node orchestration. Python for AI inference and rapid prototyping. TypeScript for the web monitoring UI.</p>
+    </div>
+    <div class="card">
+      <h3>Robotics &amp; Middleware</h3>
+      <div class="tech-badges">
+        <span class="tech-badge">ROS2 Humble</span>
+        <span class="tech-badge">ROS2 Jazzy</span>
+        <span class="tech-badge">Zenoh</span>
+        <span class="tech-badge">Boost.Asio</span>
+      </div>
+      <p>ROS2 for inter-process communication with configurable QoS. Zenoh bridge for distributed monitoring. Boost.Asio for async serial communication.</p>
+    </div>
+    <div class="card">
+      <h3>AI &amp; Machine Learning</h3>
+      <div class="tech-badges">
+        <span class="tech-badge">PyTorch</span>
+        <span class="tech-badge">HuggingFace</span>
+        <span class="tech-badge">JAX/Flax</span>
+        <span class="tech-badge">LeRobot</span>
+        <span class="tech-badge">Stable-Baselines3</span>
+      </div>
+      <p>PyTorch and HuggingFace Transformers for model inference. JAX/Flax with MuJoCo-XLA for GPU-parallel RL training. LeRobot for vision-language-action models.</p>
+    </div>
+    <div class="card">
+      <h3>Simulation</h3>
+      <div class="tech-badges">
+        <span class="tech-badge">MuJoCo</span>
+        <span class="tech-badge">MuJoCo-XLA</span>
+        <span class="tech-badge">NVIDIA Isaac Sim</span>
+        <span class="tech-badge">Gymnasium</span>
+      </div>
+      <p>MuJoCo for physics simulation with 4 operational modes. MJX for GPU-accelerated training. Isaac Sim for industrial-grade simulation with USD assets.</p>
+    </div>
+    <div class="card">
+      <h3>Build &amp; Infrastructure</h3>
+      <div class="tech-badges">
+        <span class="tech-badge">Bazel</span>
+        <span class="tech-badge">Docker</span>
+        <span class="tech-badge">GitHub Actions</span>
+        <span class="tech-badge">PyBind11</span>
+      </div>
+      <p>Bazel for hermetic, reproducible builds with cross-compilation (ARM64). Docker multi-platform containers. CI/CD with automated testing and linting.</p>
+    </div>
+    <div class="card">
+      <h3>User Interface</h3>
+      <div class="tech-badges">
+        <span class="tech-badge">Qt6</span>
+        <span class="tech-badge">React 18</span>
+        <span class="tech-badge">Tailwind CSS</span>
+        <span class="tech-badge">Radix UI</span>
+        <span class="tech-badge">Vite</span>
+      </div>
+      <p>Qt6 native desktop GUI for real-time control and calibration. React web UI with topology visualization and Zenoh SSE-based real-time monitoring.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Operation Modes -->
+<section class="section" style="background: var(--color-bg-white); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); max-width: 100%; padding: 4rem 2rem;">
+  <div style="max-width: var(--max-width); margin: 0 auto;">
+    <div class="section-header">
+      <h2>Operation Modes</h2>
+      <p>JOSHUA supports seven distinct operation modes, all selectable through configuration.</p>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Teleoperation</h3>
+        <p>Leader-follower arm control for manual robot manipulation. Supports Xbox controller input and keyboard control for data collection scenarios.</p>
+      </div>
+      <div class="card">
+        <h3>AI Inference</h3>
+        <p>Real-time autonomous operation using trained AI models. Supports SmolVLA vision-language-action models with multi-camera input and natural language task descriptions.</p>
+      </div>
+      <div class="card">
+        <h3>Training</h3>
+        <p>Reinforcement learning (PPO) and imitation learning pipelines. GPU-parallel training via MuJoCo-XLA with 2048 simultaneous environments.</p>
+      </div>
+      <div class="card">
+        <h3>Simulation</h3>
+        <p>Physics-based simulation with interactive GUI, trajectory replay, ROS2 digital twin mirroring, and headless offscreen rendering for data generation.</p>
+      </div>
+      <div class="card">
+        <h3>Data Collection</h3>
+        <p>Record teleoperation demonstrations with episode indexing for imitation learning. Supports HuggingFace datasets format (Parquet, CSV, JSONL) for standardized data storage.</p>
+      </div>
+      <div class="card">
+        <h3>Calibration</h3>
+        <p>Servo motor calibration with operational limit detection. Publishes calibration data as ROS2 topics for integration with the control panel GUI.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Documentation Links -->
+<section class="section">
+  <div class="section-header">
+    <h2>Technical Documentation</h2>
+    <p>Comprehensive documentation covering every layer of the JOSHUA framework.</p>
+  </div>
+  <div class="card-grid">
+    <a href="docs/architecture.html" class="card" style="text-decoration: none;">
+      <h3>System Architecture &rarr;</h3>
+      <p>Layered architecture overview, data flow diagrams, node orchestration, and the dual-layer data type system (Protocol Buffers + ROS2).</p>
+    </a>
+    <a href="docs/getting-started.html" class="card" style="text-decoration: none;">
+      <h3>Getting Started &rarr;</h3>
+      <p>Installation guide for Ubuntu 22.04/24.04, Docker setup, Bazel build instructions, and running your first robot configuration.</p>
+    </a>
+    <a href="docs/configuration.html" class="card" style="text-decoration: none;">
+      <h3>Configuration System &rarr;</h3>
+      <p>Protocol Buffers schema reference, configuration presets, operation modes, and the complete .pbtxt file specification.</p>
+    </a>
+    <a href="docs/robot-layer.html" class="card" style="text-decoration: none;">
+      <h3>Robot Hardware Layer &rarr;</h3>
+      <p>Hardware abstraction, factory patterns, supported actuators (STS3215, Pybricks), sensors (camera, LiDAR, encoder), and communication protocols.</p>
+    </a>
+    <a href="docs/ai-system.html" class="card" style="text-decoration: none;">
+      <h3>AI System &rarr;</h3>
+      <p>Model registry, SmolVLA integration, reinforcement learning pipeline, training infrastructure, and the extensible inference architecture.</p>
+    </a>
+    <a href="docs/simulation.html" class="card" style="text-decoration: none;">
+      <h3>Simulation Engine &rarr;</h3>
+      <p>MuJoCo physics engine, simulation modes, MJCF robot models, MuJoCo-XLA parallel training, and NVIDIA Isaac Sim integration.</p>
+    </a>
+    <a href="docs/deployment.html" class="card" style="text-decoration: none;">
+      <h3>Deployment &amp; CI/CD &rarr;</h3>
+      <p>Docker containerization, cross-compilation for ARM64, GitHub Actions CI, pre-commit hooks, and production deployment workflows.</p>
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="docs/architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
 </body>
 </html>
-

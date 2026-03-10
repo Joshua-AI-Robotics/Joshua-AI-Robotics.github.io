@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot Hardware Abstraction Layer - JOSHUA Documentation</title>
+  <meta name="description" content="Comprehensive documentation for the JOSHUA Robot Hardware Abstraction Layer covering actuators, sensors, communication protocols, and factory-pattern device instantiation.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html">Architecture</a></li>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="robot-layer.html" class="active">Robot Layer</a></li>
+      <li><a href="ai-system.html">AI System</a></li>
+      <li><a href="simulation.html">Simulation</a></li>
+      <li><a href="deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Documentation Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>Overview</h4>
+      <a href="#overview" class="active">Introduction</a>
+      <a href="#architecture">Architecture</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Action System</h4>
+      <a href="#action-system">Actuator Interfaces</a>
+      <a href="#action-factory">Factory Pattern</a>
+      <a href="#sts3215-servo">STS3215 Servo</a>
+      <a href="#mock-motor">Mock Motor</a>
+      <a href="#spike-motor">SPIKE Motor</a>
+      <a href="#action-packet">ActionPacket Proto</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Perception System</h4>
+      <a href="#perception-system">Sensor Interfaces</a>
+      <a href="#perception-factory">Factory Pattern</a>
+      <a href="#camera-sensor">Camera</a>
+      <a href="#encoder-sensor">Encoder</a>
+      <a href="#lidar-sensor">LiDAR</a>
+      <a href="#mock-sensors">Mock Sensors</a>
+      <a href="#perception-packet">PerceptionPacket Proto</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Communication</h4>
+      <a href="#communication-layer">Overview</a>
+      <a href="#serial-comm">Serial</a>
+      <a href="#ble-comm">BLE</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Integration</h4>
+      <a href="#ros2-integration">ROS2 Nodes</a>
+      <a href="#adding-hardware">Adding New Hardware</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+
+    <h1>Robot Hardware Abstraction Layer</h1>
+
+    <!-- Overview -->
+    <h2 id="overview">Overview</h2>
+
+    <p>
+      The JOSHUA Robot Layer provides a comprehensive hardware abstraction layer (HAL) that decouples high-level robot logic from the specifics of physical actuators, sensors, and communication buses. By programming against well-defined interfaces rather than concrete hardware drivers, the same control code can target a Feetech STS3215 servo arm on a bench, a LEGO SPIKE Prime over BLE, or a fully mocked test harness&mdash;without changing a single line of application logic.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>Key Design Principles</strong>
+      The Robot Layer uses the factory pattern for device instantiation, driven entirely by Protocol Buffers configuration. Both C++ and Python implementations are available for all core interfaces, enabling high-performance drivers alongside rapid-prototyping scripts. Mock implementations are provided for every device type to support testing without physical hardware.
+    </div>
+
+    <p>
+      The layer is organized into three primary subsystems:
+    </p>
+
+    <ul>
+      <li><strong>Action System</strong> &mdash; Controls actuators (servo motors, motor drivers) through a unified command interface.</li>
+      <li><strong>Perception System</strong> &mdash; Reads data from sensors (cameras, encoders, LiDAR) through a unified sensor interface.</li>
+      <li><strong>Communication Layer</strong> &mdash; Manages transport protocols (Serial, BLE) used by action and perception devices.</li>
+    </ul>
+
+    <!-- Architecture -->
+    <h2 id="architecture">Architecture</h2>
+
+    <p>
+      The Robot Layer follows a layered architecture where each subsystem is built on abstract interfaces, with concrete implementations registered in factory classes. Configuration drives which implementations are instantiated at runtime.
+    </p>
+
+    <div class="arch-box">
+      <span class="layer-label">Robot Layer Architecture</span>
+      <pre><code>+------------------------------------------------------------------+
+|                     Configuration (Proto)                        |
+|  RobotConfig { action_config, perception_config, comm_config }   |
++------------------------------------------------------------------+
+          |                    |                     |
+          v                    v                     v
++------------------+  +-------------------+  +------------------+
+|  ActionFactory   |  | PerceptionFactory |  |   CommFactory    |
+|                  |  |                   |  |                  |
+| ActionType enum  |  | PerceptionType    |  | CommType enum    |
+| -> Actuator impl |  | -> Sensor impl    |  | -> Transport     |
++------------------+  +-------------------+  +------------------+
+          |                    |                     |
+          v                    v                     v
++------------------+  +-------------------+  +------------------+
+| ActionInterface  |  | PerceptionIface   |  | CommInterface    |
+| ActuatorInterface|  | CameraInterface   |  | SerialComm       |
+|                  |  | EncoderInterface  |  | BLEComm          |
+| - STS3215 Servo  |  | LidarInterface    |  |                  |
+| - Mock Motor     |  |                   |  |                  |
+| - SPIKE Motor    |  | - Camera (OpenCV) |  |                  |
+|                  |  | - Encoder         |  |                  |
+|                  |  | - LiDAR (LDS01)   |  |                  |
+|                  |  | - Mock variants   |  |                  |
++------------------+  +-------------------+  +------------------+
+          |                    |                     |
+          +--------------------+---------------------+
+                               |
+                               v
+                    +---------------------+
+                    |   ROS2 Node Runner   |
+                    | (per-device nodes)   |
+                    +---------------------+</code></pre>
+    </div>
+
+    <p>
+      Each factory reads its corresponding section from the Protocol Buffers configuration and returns the appropriate concrete implementation. This design ensures that new hardware support can be added by implementing an interface and registering it in the factory&mdash;no changes to the orchestration or node layer are required.
+    </p>
+
+    <!-- Action System -->
+    <h2 id="action-system">Action System (Actuators)</h2>
+
+    <p>
+      The Action System provides a unified interface for sending commands to physical actuators. It is built around two core abstract interfaces:
+    </p>
+
+    <h3>ActionInterface</h3>
+    <p>
+      The top-level abstract base class for all action devices. It defines the contract for writing commands to hardware.
+    </p>
+
+    <pre><code>// C++ - ActionInterface (abstract base)
+class ActionInterface {
+public:
+  virtual ~ActionInterface() = default;
+
+  // Initialize the action device with configuration
+  virtual bool initialize(const ActionConfig&amp; config) = 0;
+
+  // Write a command packet to the hardware
+  virtual bool write(const ActionPacket&amp; packet) = 0;
+
+  // Shut down the device gracefully
+  virtual void shutdown() = 0;
+
+  // Check if the device is ready to accept commands
+  virtual bool isReady() const = 0;
+};</code></pre>
+
+    <h3>ActuatorInterface</h3>
+    <p>
+      A more specific interface extending <code>ActionInterface</code> for motor-based actuators, adding methods for position, speed, and torque control.
+    </p>
+
+    <pre><code>// C++ - ActuatorInterface (extends ActionInterface)
+class ActuatorInterface : public ActionInterface {
+public:
+  // Set target position for the actuator (in device units)
+  virtual bool setPosition(int id, int position) = 0;
+
+  // Set movement speed
+  virtual bool setSpeed(int id, int speed) = 0;
+
+  // Enable or disable torque
+  virtual bool setTorque(int id, bool enable) = 0;
+
+  // Read current position from the actuator
+  virtual int readPosition(int id) = 0;
+};</code></pre>
+
+    <h3 id="action-factory">ActionFactory Pattern</h3>
+
+    <p>
+      The <code>ActionFactory</code> creates actuator instances based on the <code>ActionType</code> enum defined in the configuration proto. This is the single point of entry for all actuator instantiation.
+    </p>
+
+    <pre><code>// C++ - ActionFactory
+class ActionFactory {
+public:
+  static std::unique_ptr&lt;ActionInterface&gt; create(const ActionConfig&amp; config) {
+    switch (config.action_type()) {
+      case ActionType::STS3215_SERVO:
+        return std::make_unique&lt;STS3215Servo&gt;(config);
+
+      case ActionType::MOCK_MOTOR:
+        return std::make_unique&lt;MockMotor&gt;(config);
+
+      case ActionType::SPIKE_MOTOR:
+        return std::make_unique&lt;SpikeMotor&gt;(config);
+
+      default:
+        throw std::runtime_error("Unknown ActionType: " +
+          std::to_string(config.action_type()));
+    }
+  }
+};</code></pre>
+
+    <pre><code># Python - ActionFactory
+class ActionFactory:
+    """Factory for creating action device instances from configuration."""
+
+    _registry: Dict[ActionType, Type[ActionInterface]] = {
+        ActionType.STS3215_SERVO: STS3215Servo,
+        ActionType.MOCK_MOTOR: MockMotor,
+        ActionType.SPIKE_MOTOR: SpikeMotor,
+    }
+
+    @classmethod
+    def create(cls, config: ActionConfig) -&gt; ActionInterface:
+        action_class = cls._registry.get(config.action_type)
+        if action_class is None:
+            raise ValueError(f"Unknown ActionType: {config.action_type}")
+        return action_class(config)</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Configuration-Driven</strong>
+      The factory reads the <code>action_type</code> field from the proto config, so switching from real hardware to a mock driver is a single-line config change&mdash;no recompilation or code changes needed.
+    </div>
+
+    <!-- Supported Actuators Table -->
+    <h3>Supported Actuators</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Actuator</th>
+          <th>ActionType Enum</th>
+          <th>Language</th>
+          <th>Transport</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>STS3215 Servo</td>
+          <td><code>STS3215_SERVO</code></td>
+          <td>C++ + Python</td>
+          <td>Serial (TTL bus)</td>
+          <td>SO-ARM100 robotic arms, precision joint control</td>
+        </tr>
+        <tr>
+          <td>Mock Motor</td>
+          <td><code>MOCK_MOTOR</code></td>
+          <td>Python</td>
+          <td>None (in-memory)</td>
+          <td>Unit testing, CI pipelines, development without hardware</td>
+        </tr>
+        <tr>
+          <td>SPIKE Motor</td>
+          <td><code>SPIKE_MOTOR</code></td>
+          <td>Python</td>
+          <td>BLE (Pybricks)</td>
+          <td>LEGO SPIKE Prime educational robotics</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- STS3215 Servo -->
+    <h3 id="sts3215-servo">STS3215 Servo</h3>
+
+    <p>
+      The Feetech STS3215 is a TTL bus servo used in the SO-ARM100 robotic arm. It supports daisy-chaining multiple servos on a single serial bus, with each servo addressed by a unique ID. The driver implements the Feetech serial protocol for position, speed, and torque control.
+    </p>
+
+    <ul>
+      <li><strong>Protocol:</strong> Feetech serial protocol over TTL half-duplex UART</li>
+      <li><strong>Position range:</strong> 0&ndash;4095 (12-bit resolution, 0.088 degrees per step)</li>
+      <li><strong>Speed control:</strong> Configurable movement speed per command</li>
+      <li><strong>Torque control:</strong> Enable/disable torque per servo; adjustable torque limit</li>
+      <li><strong>Feedback:</strong> Read-back of current position, speed, load, voltage, and temperature</li>
+      <li><strong>Bus topology:</strong> Up to 253 servos per bus, daisy-chained on a single serial port</li>
+    </ul>
+
+    <pre><code># Python - STS3215 Servo usage
+from joshua.robot.action import ActionFactory, ActionConfig
+
+config = ActionConfig(
+    action_type=ActionType.STS3215_SERVO,
+    serial_port="/dev/ttyUSB0",
+    baudrate=1000000,
+    servo_ids=[1, 2, 3, 4, 5, 6],
+)
+
+servo = ActionFactory.create(config)
+servo.initialize(config)
+
+# Set position for servo ID 1 to midpoint
+servo.setPosition(id=1, position=2048)
+
+# Set movement speed for servo ID 2
+servo.setSpeed(id=2, speed=500)
+
+# Enable torque on all servos
+for sid in config.servo_ids:
+    servo.setTorque(id=sid, enable=True)</code></pre>
+
+    <!-- Mock Motor -->
+    <h3 id="mock-motor">Mock Motor</h3>
+
+    <p>
+      The Mock Motor is a Python-only testing implementation that simulates actuator behavior without requiring physical hardware. All commands are logged to an internal buffer for assertion in unit tests, and position reads return the last commanded value.
+    </p>
+
+    <pre><code># Python - Mock Motor usage
+from joshua.robot.action import ActionFactory, ActionConfig
+
+config = ActionConfig(
+    action_type=ActionType.MOCK_MOTOR,
+    servo_ids=[1, 2, 3],
+)
+
+mock = ActionFactory.create(config)
+mock.initialize(config)
+
+# Commands are logged, not sent to hardware
+mock.setPosition(id=1, position=1024)
+mock.setTorque(id=1, enable=True)
+
+# Retrieve command log for test assertions
+assert mock.get_command_log()[-1] == {"id": 1, "torque": True}
+print(f"Commands logged: {len(mock.get_command_log())}")</code></pre>
+
+    <!-- SPIKE Motor -->
+    <h3 id="spike-motor">SPIKE Motor</h3>
+
+    <p>
+      The SPIKE Motor driver supports LEGO SPIKE Prime hubs running Pybricks firmware, communicating via Bluetooth Low Energy (BLE). The <code>PybricksMotorDriver</code> wraps the BLE transport layer to send motor commands to the hub.
+    </p>
+
+    <ul>
+      <li><strong>Transport:</strong> Bluetooth Low Energy (BLE) via the Pybricks protocol</li>
+      <li><strong>Firmware:</strong> Requires Pybricks firmware installed on the SPIKE Prime hub</li>
+      <li><strong>Motor types:</strong> Supports SPIKE Prime Large Motor and Medium Motor</li>
+      <li><strong>Commands:</strong> Position control, speed control, run-for-degrees, run-for-time</li>
+      <li><strong>Feedback:</strong> Motor angle, speed, and stall detection over BLE notifications</li>
+    </ul>
+
+    <pre><code># Python - SPIKE Motor with Pybricks BLE
+from joshua.robot.action import ActionFactory, ActionConfig
+
+config = ActionConfig(
+    action_type=ActionType.SPIKE_MOTOR,
+    ble_device_name="Pybricks Hub",
+    motor_ports=["A", "B", "C"],
+)
+
+spike = ActionFactory.create(config)
+spike.initialize(config)  # Initiates BLE connection and handshake
+
+# Run motor on port A to position 90 degrees
+spike.setPosition(id=0, position=90)
+
+# Set continuous speed on port B
+spike.setSpeed(id=1, speed=500)</code></pre>
+
+    <!-- ActionPacket Proto -->
+    <h3 id="action-packet">ActionPacket Proto</h3>
+
+    <p>
+      All commands flowing through the Action System are serialized as <code>ActionPacket</code> Protocol Buffers messages. This provides a structured, versioned, and language-agnostic wire format for motor commands.
+    </p>
+
+    <pre><code>// Proto - ActionPacket definition
+syntax = "proto3";
+package joshua.robot;
+
+message ActionPacket {
+  // Target servo/motor identifier
+  int32 device_id = 1;
+
+  // Primary command fields
+  int32 position = 2;       // Target position (device units)
+  int32 torque = 3;         // Torque value or enable flag
+  int32 speed = 4;          // Movement speed
+
+  // Preset commands for common operations
+  enum PresetCommand {
+    NONE = 0;
+    HOME = 1;               // Move to home/zero position
+    PARK = 2;               // Move to park/safe position
+    EMERGENCY_STOP = 3;     // Immediate stop, disable torque
+  }
+  PresetCommand preset = 5;
+
+  // Complex multi-parameter actions
+  message CompoundAction {
+    repeated int32 target_positions = 1;  // Synchronized multi-joint
+    repeated int32 target_speeds = 2;     // Per-joint speeds
+    int32 interpolation_ms = 3;           // Interpolation duration
+  }
+  CompoundAction compound = 6;
+
+  // Timestamp for synchronization
+  int64 timestamp_ns = 7;
+}</code></pre>
+
+    <div class="callout callout-info">
+      <strong>Multi-Joint Synchronization</strong>
+      The <code>CompoundAction</code> field enables synchronized multi-joint movements with per-joint speed profiles and configurable interpolation time, which is essential for smooth robotic arm trajectories.
+    </div>
+
+    <!-- Perception System -->
+    <h2 id="perception-system">Perception System (Sensors)</h2>
+
+    <p>
+      The Perception System provides a unified interface for reading data from sensors. Like the Action System, it is built on abstract interfaces with factory-pattern instantiation.
+    </p>
+
+    <h3>PerceptionInterface</h3>
+    <p>
+      The top-level abstract base class for all perception devices.
+    </p>
+
+    <pre><code>// C++ - PerceptionInterface (abstract base)
+class PerceptionInterface {
+public:
+  virtual ~PerceptionInterface() = default;
+
+  // Initialize the sensor with configuration
+  virtual bool initialize(const PerceptionConfig&amp; config) = 0;
+
+  // Read a data packet from the sensor
+  virtual PerceptionPacket read() = 0;
+
+  // Shut down the sensor gracefully
+  virtual void shutdown() = 0;
+
+  // Check if the sensor has new data available
+  virtual bool hasData() const = 0;
+};</code></pre>
+
+    <h3>Specialized Sensor Interfaces</h3>
+
+    <p>
+      More specific interfaces extend <code>PerceptionInterface</code> for different sensor modalities:
+    </p>
+
+    <pre><code>// C++ - Specialized sensor interfaces
+
+class CameraInterface : public PerceptionInterface {
+public:
+  virtual cv::Mat captureFrame() = 0;
+  virtual bool setResolution(int width, int height) = 0;
+  virtual bool setFPS(int fps) = 0;
+};
+
+class EncoderInterface : public PerceptionInterface {
+public:
+  virtual double readAngle(int id) = 0;
+  virtual double readVelocity(int id) = 0;
+  virtual void setDataMode(EncoderDataMode mode) = 0;
+};
+
+class LidarInterface : public PerceptionInterface {
+public:
+  virtual std::vector&lt;float&gt; readRanges() = 0;
+  virtual float getAngleMin() const = 0;
+  virtual float getAngleMax() const = 0;
+  virtual float getAngleIncrement() const = 0;
+};</code></pre>
+
+    <h3 id="perception-factory">PerceptionFactory Pattern</h3>
+
+    <pre><code>// C++ - PerceptionFactory
+class PerceptionFactory {
+public:
+  static std::unique_ptr&lt;PerceptionInterface&gt; create(
+      const PerceptionConfig&amp; config) {
+    switch (config.perception_type()) {
+      case PerceptionType::CAMERA:
+        return std::make_unique&lt;CameraDriver&gt;(config);
+
+      case PerceptionType::ENCODER:
+        return std::make_unique&lt;EncoderDriver&gt;(config);
+
+      case PerceptionType::LIDAR:
+        return std::make_unique&lt;LidarDriver&gt;(config);
+
+      case PerceptionType::MOCK_CAMERA:
+        return std::make_unique&lt;MockCamera&gt;(config);
+
+      case PerceptionType::MOCK_ENCODER:
+        return std::make_unique&lt;MockEncoder&gt;(config);
+
+      case PerceptionType::MOCK_LIDAR:
+        return std::make_unique&lt;MockLidar&gt;(config);
+
+      default:
+        throw std::runtime_error("Unknown PerceptionType");
+    }
+  }
+};</code></pre>
+
+    <!-- Supported Sensors Table -->
+    <h3>Supported Sensors</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sensor</th>
+          <th>PerceptionType Enum</th>
+          <th>Language</th>
+          <th>ROS2 Message Type</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Camera (OpenCV)</td>
+          <td><code>CAMERA</code></td>
+          <td>C++ + Python</td>
+          <td><code>sensor_msgs/Image</code></td>
+          <td>Visual perception, AI inference input</td>
+        </tr>
+        <tr>
+          <td>Encoder (STS3215)</td>
+          <td><code>ENCODER</code></td>
+          <td>C++ + Python</td>
+          <td><code>std_msgs/Float64MultiArray</code></td>
+          <td>Joint position feedback, teleoperation</td>
+        </tr>
+        <tr>
+          <td>LiDAR (LDS01)</td>
+          <td><code>LIDAR</code></td>
+          <td>C++</td>
+          <td><code>sensor_msgs/LaserScan</code>, <code>PointCloud2</code></td>
+          <td>Obstacle detection, mapping</td>
+        </tr>
+        <tr>
+          <td>Mock Camera</td>
+          <td><code>MOCK_CAMERA</code></td>
+          <td>Python</td>
+          <td><code>sensor_msgs/Image</code></td>
+          <td>Testing without camera hardware</td>
+        </tr>
+        <tr>
+          <td>Mock Encoder</td>
+          <td><code>MOCK_ENCODER</code></td>
+          <td>Python</td>
+          <td><code>std_msgs/Float64MultiArray</code></td>
+          <td>Testing without encoder hardware</td>
+        </tr>
+        <tr>
+          <td>Mock LiDAR</td>
+          <td><code>MOCK_LIDAR</code></td>
+          <td>Python</td>
+          <td><code>sensor_msgs/LaserScan</code></td>
+          <td>Testing without LiDAR hardware</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Camera Sensor -->
+    <h3 id="camera-sensor">Camera</h3>
+
+    <p>
+      The Camera driver uses OpenCV (<code>cv::VideoCapture</code> in C++, <code>cv2.VideoCapture</code> in Python) to capture frames from USB or CSI cameras. It supports configurable resolution, frame rate, and FourCC codec settings, and publishes frames as <code>sensor_msgs/Image</code> ROS2 messages.
+    </p>
+
+    <ul>
+      <li><strong>Resolution:</strong> Configurable width and height (e.g., 640x480, 1280x720)</li>
+      <li><strong>Frame rate:</strong> Configurable FPS (default: 30)</li>
+      <li><strong>FourCC codec:</strong> Configurable video codec (e.g., <code>MJPG</code>, <code>YUYV</code>)</li>
+      <li><strong>Device index:</strong> Supports multiple cameras by device index or path</li>
+      <li><strong>ROS2 output:</strong> Publishes <code>sensor_msgs/Image</code> on configurable topic name</li>
+    </ul>
+
+    <pre><code># Python - Camera configuration and usage
+from joshua.robot.perception import PerceptionFactory, PerceptionConfig
+
+config = PerceptionConfig(
+    perception_type=PerceptionType.CAMERA,
+    camera_config=CameraConfig(
+        device_index=0,
+        width=640,
+        height=480,
+        fps=30,
+        fourcc="MJPG",
+    ),
+    topic_name="/camera/image_raw",
+)
+
+camera = PerceptionFactory.create(config)
+camera.initialize(config)
+
+# Capture a single frame
+packet = camera.read()
+# packet.image_data contains raw pixel data
+# packet.width, packet.height, packet.encoding describe the format</code></pre>
+
+    <!-- Encoder Sensor -->
+    <h3 id="encoder-sensor">Encoder</h3>
+
+    <p>
+      The Encoder driver reads position feedback from STS3215 servo encoders. It supports multiple data normalization modes to provide position data in the format most useful for downstream consumers (raw device units, normalized floats, or radians).
+    </p>
+
+    <h4>Encoder Data Modes</h4>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Enum Value</th>
+          <th>Range</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Raw</td>
+          <td><code>RAW</code></td>
+          <td>0&ndash;4095</td>
+          <td>Raw 12-bit encoder ticks as read from hardware</td>
+        </tr>
+        <tr>
+          <td>Normalized [0, 1]</td>
+          <td><code>NORMALIZED_0_1</code></td>
+          <td>0.0&ndash;1.0</td>
+          <td>Linear mapping of raw range to unit interval</td>
+        </tr>
+        <tr>
+          <td>Normalized [-1, 1]</td>
+          <td><code>NORMALIZED_NEG1_1</code></td>
+          <td>-1.0&ndash;1.0</td>
+          <td>Centered normalization for symmetric joint ranges</td>
+        </tr>
+        <tr>
+          <td>Radians</td>
+          <td><code>NORMALIZED_RADIAN</code></td>
+          <td>0&ndash;2&pi;</td>
+          <td>Angular position in radians for kinematic calculations</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <pre><code>// C++ - Encoder configuration example
+PerceptionConfig config;
+config.set_perception_type(PerceptionType::ENCODER);
+config.mutable_encoder_config()-&gt;set_serial_port("/dev/ttyUSB0");
+config.mutable_encoder_config()-&gt;set_baudrate(1000000);
+config.mutable_encoder_config()-&gt;set_data_mode(EncoderDataMode::NORMALIZED_NEG1_1);
+
+// Add servo IDs to read from
+for (int id : {1, 2, 3, 4, 5, 6}) {
+  config.mutable_encoder_config()-&gt;add_servo_ids(id);
+}
+
+auto encoder = PerceptionFactory::create(config);
+encoder-&gt;initialize(config);
+
+// Read normalized positions for all servos
+PerceptionPacket packet = encoder-&gt;read();
+// packet.position_data() contains [-1.0, 1.0] values per servo</code></pre>
+
+    <!-- LiDAR Sensor -->
+    <h3 id="lidar-sensor">LiDAR</h3>
+
+    <p>
+      The LiDAR driver supports the HLS-LFCD LDS01 (LDS-01) 2D laser distance sensor. It publishes both <code>sensor_msgs/LaserScan</code> for 2D navigation and <code>sensor_msgs/PointCloud2</code> for 3D visualization. A built-in visualizer node can render the scan data for debugging.
+    </p>
+
+    <ul>
+      <li><strong>Sensor:</strong> HLS-LFCD LDS01 (360-degree 2D laser scanner)</li>
+      <li><strong>Range:</strong> 120mm to 3500mm</li>
+      <li><strong>Angular resolution:</strong> 1 degree (360 points per scan)</li>
+      <li><strong>Scan rate:</strong> ~5 Hz (configurable)</li>
+      <li><strong>ROS2 output:</strong> <code>sensor_msgs/LaserScan</code> and <code>sensor_msgs/PointCloud2</code></li>
+      <li><strong>Visualizer:</strong> Built-in scan visualizer node for debugging and calibration</li>
+    </ul>
+
+    <pre><code>// C++ - LiDAR driver initialization
+PerceptionConfig config;
+config.set_perception_type(PerceptionType::LIDAR);
+config.mutable_lidar_config()-&gt;set_serial_port("/dev/ttyUSB1");
+config.mutable_lidar_config()-&gt;set_baudrate(230400);
+config.mutable_lidar_config()-&gt;set_frame_id("laser_frame");
+
+auto lidar = PerceptionFactory::create(config);
+lidar-&gt;initialize(config);
+
+// Read a full 360-degree scan
+PerceptionPacket packet = lidar-&gt;read();
+// packet.point_cloud_data() for PointCloud2 format
+// packet.sensor_data() for LaserScan ranges</code></pre>
+
+    <!-- Mock Sensors -->
+    <h3 id="mock-sensors">Mock Sensors</h3>
+
+    <p>
+      Mock implementations are available for all sensor types. They generate synthetic data (test patterns for cameras, sinusoidal values for encoders, randomized range data for LiDAR) and are used extensively in CI pipelines and unit tests.
+    </p>
+
+    <pre><code># Python - Using mock sensors in tests
+import pytest
+from joshua.robot.perception import PerceptionFactory, PerceptionConfig
+
+def test_perception_pipeline():
+    """Test the full perception pipeline with mock sensors."""
+    config = PerceptionConfig(
+        perception_type=PerceptionType.MOCK_CAMERA,
+        camera_config=CameraConfig(width=640, height=480, fps=30),
+    )
+
+    camera = PerceptionFactory.create(config)
+    camera.initialize(config)
+
+    packet = camera.read()
+    assert packet.image_data is not None
+    assert packet.width == 640
+    assert packet.height == 480</code></pre>
+
+    <!-- PerceptionPacket Proto -->
+    <h3 id="perception-packet">PerceptionPacket Proto</h3>
+
+    <p>
+      All sensor data flows through <code>PerceptionPacket</code> Protocol Buffers messages, providing a unified envelope for heterogeneous sensor data.
+    </p>
+
+    <pre><code>// Proto - PerceptionPacket definition
+syntax = "proto3";
+package joshua.robot;
+
+message PerceptionPacket {
+  // Image data (camera output)
+  message ImageData {
+    bytes data = 1;            // Raw pixel data
+    int32 width = 2;
+    int32 height = 3;
+    string encoding = 4;       // e.g., "rgb8", "bgr8", "mono8"
+    int32 step = 5;            // Row stride in bytes
+  }
+  ImageData image_data = 1;
+
+  // Position data (encoder output)
+  message PositionData {
+    repeated double values = 1;          // Position values per joint
+    EncoderDataMode data_mode = 2;       // Normalization mode used
+    repeated int32 device_ids = 3;       // Corresponding device IDs
+  }
+  PositionData position_data = 2;
+
+  // Generic sensor data (LiDAR LaserScan)
+  message SensorData {
+    repeated float ranges = 1;           // Distance measurements
+    repeated float intensities = 2;      // Signal intensities
+    float angle_min = 3;
+    float angle_max = 4;
+    float angle_increment = 5;
+    float range_min = 6;
+    float range_max = 7;
+  }
+  SensorData sensor_data = 3;
+
+  // Point cloud data (LiDAR PointCloud2)
+  message PointCloudData {
+    bytes data = 1;                      // Serialized point cloud
+    int32 width = 2;
+    int32 height = 3;
+    int32 point_step = 4;
+    int32 row_step = 5;
+    bool is_dense = 6;
+  }
+  PointCloudData point_cloud_data = 4;
+
+  // Metadata
+  string frame_id = 10;
+  int64 timestamp_ns = 11;
+}</code></pre>
+
+    <!-- Communication Layer -->
+    <h2 id="communication-layer">Communication Layer</h2>
+
+    <p>
+      The Communication Layer abstracts transport protocols used by action and perception devices. It provides a uniform interface for sending and receiving bytes, regardless of whether the underlying transport is serial UART, Bluetooth LE, or another protocol.
+    </p>
+
+    <pre><code>// C++ - CommInterface (abstract base)
+class CommInterface {
+public:
+  virtual ~CommInterface() = default;
+
+  virtual bool open(const CommConfig&amp; config) = 0;
+  virtual bool close() = 0;
+  virtual bool isOpen() const = 0;
+
+  virtual size_t write(const uint8_t* data, size_t length) = 0;
+  virtual size_t read(uint8_t* buffer, size_t max_length) = 0;
+
+  // Async read with callback (Boost.Asio-based)
+  virtual void asyncRead(
+      std::function&lt;void(const uint8_t*, size_t)&gt; callback) = 0;
+};</code></pre>
+
+    <h3 id="serial-comm">Serial Communication</h3>
+
+    <p>
+      The Serial implementation uses <strong>Boost.Asio</strong> for asynchronous I/O, supporting configurable port paths and baud rates. It handles the half-duplex TTL bus protocol required by Feetech servos and full-duplex UART for LiDAR sensors.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>port</code></td>
+          <td>string</td>
+          <td><code>/dev/ttyUSB0</code></td>
+          <td>Serial device path</td>
+        </tr>
+        <tr>
+          <td><code>baudrate</code></td>
+          <td>uint32</td>
+          <td><code>1000000</code></td>
+          <td>Communication speed in baud</td>
+        </tr>
+        <tr>
+          <td><code>timeout_ms</code></td>
+          <td>uint32</td>
+          <td><code>100</code></td>
+          <td>Read/write timeout in milliseconds</td>
+        </tr>
+        <tr>
+          <td><code>data_bits</code></td>
+          <td>uint32</td>
+          <td><code>8</code></td>
+          <td>Number of data bits</td>
+        </tr>
+        <tr>
+          <td><code>parity</code></td>
+          <td>enum</td>
+          <td><code>NONE</code></td>
+          <td>Parity mode (NONE, ODD, EVEN)</td>
+        </tr>
+        <tr>
+          <td><code>stop_bits</code></td>
+          <td>enum</td>
+          <td><code>ONE</code></td>
+          <td>Number of stop bits (ONE, TWO)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <pre><code>// C++ - Serial communication with Boost.Asio
+#include "joshua/robot/comm/serial_comm.h"
+
+CommConfig config;
+config.set_comm_type(CommType::SERIAL);
+config.mutable_serial_config()-&gt;set_port("/dev/ttyUSB0");
+config.mutable_serial_config()-&gt;set_baudrate(1000000);
+config.mutable_serial_config()-&gt;set_timeout_ms(100);
+
+auto serial = CommFactory::create(config);
+serial-&gt;open(config);
+
+// Synchronous write
+uint8_t cmd[] = {0xFF, 0xFF, 0x01, 0x04, 0x03, 0x2A, 0x00, 0xCC};
+serial-&gt;write(cmd, sizeof(cmd));
+
+// Asynchronous read with callback
+serial-&gt;asyncRead([](const uint8_t* data, size_t len) {
+    // Process response from servo
+    std::cout &lt;&lt; "Received " &lt;&lt; len &lt;&lt; " bytes" &lt;&lt; std::endl;
+});</code></pre>
+
+    <h3 id="ble-comm">BLE Communication</h3>
+
+    <p>
+      The BLE implementation provides the transport layer for Pybricks SPIKE Prime motors. It handles BLE device scanning, connection management, characteristic discovery, and notification-based data reception.
+    </p>
+
+    <ul>
+      <li><strong>Protocol:</strong> Pybricks BLE service UUID for SPIKE Prime hubs</li>
+      <li><strong>Connection:</strong> Automatic scan, connect, and characteristic discovery</li>
+      <li><strong>Write:</strong> Commands sent via BLE GATT write operations</li>
+      <li><strong>Read:</strong> Motor feedback received via BLE GATT notifications</li>
+      <li><strong>Reconnection:</strong> Automatic reconnection on BLE disconnect</li>
+    </ul>
+
+    <pre><code># Python - BLE communication for Pybricks
+from joshua.robot.comm import CommFactory, CommConfig
+
+config = CommConfig(
+    comm_type=CommType.BLE,
+    ble_config=BLEConfig(
+        device_name="Pybricks Hub",
+        service_uuid="c5f50001-8280-46da-89f4-6d8051e4aeef",
+        char_uuid="c5f50002-8280-46da-89f4-6d8051e4aeef",
+        auto_reconnect=True,
+    ),
+)
+
+ble = CommFactory.create(config)
+ble.open(config)
+
+# Send motor command over BLE
+command_bytes = build_pybricks_command(port="A", speed=500)
+ble.write(command_bytes)
+
+# Register notification callback for motor feedback
+ble.asyncRead(callback=on_motor_feedback)</code></pre>
+
+    <h3>CommFactory</h3>
+
+    <pre><code>// C++ - CommFactory
+class CommFactory {
+public:
+  static std::unique_ptr&lt;CommInterface&gt; create(const CommConfig&amp; config) {
+    switch (config.comm_type()) {
+      case CommType::SERIAL:
+        return std::make_unique&lt;SerialComm&gt;(config);
+
+      case CommType::BLE:
+        return std::make_unique&lt;BLEComm&gt;(config);
+
+      default:
+        throw std::runtime_error("Unknown CommType");
+    }
+  }
+};</code></pre>
+
+    <!-- ROS2 Node Integration -->
+    <h2 id="ros2-integration">ROS2 Node Integration</h2>
+
+    <p>
+      Each hardware device in the Robot Layer runs as a separate ROS2 node, managed by the Node Generator orchestrator. The node type determines which publishers and subscribers are created, and data flows through the system as serialized <code>ActionPacket</code> and <code>PerceptionPacket</code> Protocol Buffers messages wrapped in ROS2 message types.
+    </p>
+
+    <h3>Node Type Mapping</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Node Type</th>
+          <th>Direction</th>
+          <th>ROS2 Interface</th>
+          <th>Proto Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Actuator Node</td>
+          <td>Subscriber</td>
+          <td><code>std_msgs/ByteMultiArray</code></td>
+          <td><code>ActionPacket</code></td>
+        </tr>
+        <tr>
+          <td>Camera Node</td>
+          <td>Publisher</td>
+          <td><code>sensor_msgs/Image</code></td>
+          <td><code>PerceptionPacket.ImageData</code></td>
+        </tr>
+        <tr>
+          <td>Encoder Node</td>
+          <td>Publisher</td>
+          <td><code>std_msgs/Float64MultiArray</code></td>
+          <td><code>PerceptionPacket.PositionData</code></td>
+        </tr>
+        <tr>
+          <td>LiDAR Node</td>
+          <td>Publisher</td>
+          <td><code>sensor_msgs/LaserScan</code></td>
+          <td><code>PerceptionPacket.SensorData</code></td>
+        </tr>
+        <tr>
+          <td>LiDAR Node</td>
+          <td>Publisher</td>
+          <td><code>sensor_msgs/PointCloud2</code></td>
+          <td><code>PerceptionPacket.PointCloudData</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Data Flow</h3>
+
+    <div class="arch-box">
+      <span class="layer-label">ROS2 Data Flow</span>
+      <pre><code>  Configuration (.pbtxt)
+          |
+          v
+  +------------------+
+  |  Node Generator   |   Parses config, spawns per-device nodes
+  +------------------+
+          |
+    +-----+-----+-----+------ ...
+    |           |           |
+    v           v           v
++---------+ +---------+ +---------+
+| Actuator| | Camera  | | Encoder |   Each device = 1 ROS2 node
+|  Node   | |  Node   | |  Node   |
++---------+ +---------+ +---------+
+    |           |           |
+    | sub       | pub       | pub
+    v           v           v
+  [ActionPacket]  [Image]  [Float64MultiArray]
+  (serialized)   (sensor)   (sensor)
+    |           |           |
+    v           v           v
+  Hardware    Hardware    Hardware
+  (Servos)    (Camera)    (Encoders)</code></pre>
+    </div>
+
+    <pre><code># Python - Example: Actuator ROS2 node runner
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import ByteMultiArray
+from joshua.robot.action import ActionFactory
+
+class ActuatorNode(Node):
+    def __init__(self, config):
+        super().__init__(f"actuator_{config.name}")
+        self.actuator = ActionFactory.create(config)
+        self.actuator.initialize(config)
+
+        # Subscribe to command topic
+        self.subscription = self.create_subscription(
+            ByteMultiArray,
+            f"/{config.name}/command",
+            self.command_callback,
+            10,  # QoS depth
+        )
+
+    def command_callback(self, msg):
+        # Deserialize ActionPacket from ROS2 message
+        packet = ActionPacket()
+        packet.ParseFromString(bytes(msg.data))
+        self.actuator.write(packet)</code></pre>
+
+    <!-- Adding New Hardware -->
+    <h2 id="adding-hardware">Adding New Hardware</h2>
+
+    <p>
+      The Robot Layer is designed for extensibility. Adding support for new hardware follows a consistent four-step process:
+    </p>
+
+    <h3>Step 1: Define Proto Configuration</h3>
+    <p>
+      Add the new device type to the appropriate enum and define its configuration message in the Protocol Buffers schema.
+    </p>
+
+    <pre><code>// Proto - Add new actuator type
+enum ActionType {
+  STS3215_SERVO = 0;
+  MOCK_MOTOR = 1;
+  SPIKE_MOTOR = 2;
+  MY_NEW_MOTOR = 3;    // &lt;-- Add new enum value
+}
+
+message MyNewMotorConfig {
+  string port = 1;
+  int32 baudrate = 2;
+  repeated int32 motor_ids = 3;
+  // ... device-specific parameters
+}
+
+message ActionConfig {
+  ActionType action_type = 1;
+  // ...existing fields...
+  MyNewMotorConfig my_new_motor_config = 10;  // &lt;-- Add config field
+}</code></pre>
+
+    <h3>Step 2: Implement the Interface</h3>
+    <p>
+      Create a new class implementing <code>ActuatorInterface</code> (for action devices) or <code>PerceptionInterface</code> (for sensors).
+    </p>
+
+    <pre><code>// C++ - Implement the interface
+class MyNewMotor : public ActuatorInterface {
+public:
+  explicit MyNewMotor(const ActionConfig&amp; config);
+
+  bool initialize(const ActionConfig&amp; config) override;
+  bool write(const ActionPacket&amp; packet) override;
+  void shutdown() override;
+  bool isReady() const override;
+
+  bool setPosition(int id, int position) override;
+  bool setSpeed(int id, int speed) override;
+  bool setTorque(int id, bool enable) override;
+  int readPosition(int id) override;
+
+private:
+  std::unique_ptr&lt;CommInterface&gt; comm_;
+  // ... device-specific state
+};</code></pre>
+
+    <h3>Step 3: Register in Factory</h3>
+    <p>
+      Add a case for the new device type in the appropriate factory class.
+    </p>
+
+    <pre><code>// C++ - Register in ActionFactory
+case ActionType::MY_NEW_MOTOR:
+  return std::make_unique&lt;MyNewMotor&gt;(config);</code></pre>
+
+    <h3>Step 4: Add to Node Runner</h3>
+    <p>
+      Ensure the Node Generator can spawn a node for the new device type. In most cases, this is automatic because the factory handles instantiation&mdash;but you may need to add topic mappings if your device uses non-standard message types.
+    </p>
+
+    <pre><code># Example .pbtxt configuration using the new hardware
+robot_config {
+  name: "my_robot"
+  action_nodes {
+    name: "new_motor_arm"
+    action_config {
+      action_type: MY_NEW_MOTOR
+      my_new_motor_config {
+        port: "/dev/ttyACM0"
+        baudrate: 115200
+        motor_ids: [1, 2, 3]
+      }
+    }
+    topic: "/new_motor_arm/command"
+  }
+}</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Testing Your New Driver</strong>
+      Always create a corresponding mock implementation alongside the real driver. This enables the full test suite and CI pipeline to validate the integration without requiring physical hardware.
+    </div>
+
+  </main>
+
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

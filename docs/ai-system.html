@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI System - JOSHUA Documentation</title>
+  <meta name="description" content="JOSHUA AI System documentation covering model architecture, inference pipeline, training infrastructure, and data collection for autonomous robotics.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html">Architecture</a></li>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="robot-layer.html">Robot Layer</a></li>
+      <li><a href="ai-system.html" class="active">AI System</a></li>
+      <li><a href="simulation.html">Simulation</a></li>
+      <li><a href="deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Docs Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>Overview</h4>
+      <a href="#overview" class="active">AI System Overview</a>
+      <a href="#architecture-diagram">Architecture Diagram</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Model Architecture</h4>
+      <a href="#model-base">ModelBase</a>
+      <a href="#model-registry">ModelRegistry</a>
+      <a href="#inference-node">ROS2 Inference Node</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Implemented Models</h4>
+      <a href="#random-noise">RandomNoise</a>
+      <a href="#smolvla">SmolVLA (VLA)</a>
+      <a href="#model-comparison">Model Comparison</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Training Pipeline</h4>
+      <a href="#training-overview">Training Overview</a>
+      <a href="#mjx-ppo">MJX PPO (JAX/Flax)</a>
+      <a href="#mjx-environments">MJX Environments</a>
+      <a href="#isaac-sim">Isaac Sim Integration</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Data Collection</h4>
+      <a href="#data-collection">Data Collection System</a>
+      <a href="#dataset-formats">Dataset Formats</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Integration</h4>
+      <a href="#inference-pipeline">Inference Pipeline Flow</a>
+      <a href="#adding-models">Adding New Models</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+
+    <h1>AI System</h1>
+    <p>
+      The AI layer in JOSHUA provides an extensible model architecture for robot intelligence. It supports three primary workflows: <strong>inference</strong> (deploying trained models for real-time autonomous control), <strong>training</strong> (reinforcement learning and imitation learning pipelines), and <strong>data collection</strong> (recording teleoperation demonstrations for learning from human expertise).
+    </p>
+
+    <!-- Overview -->
+    <h2 id="overview">Overview</h2>
+    <p>
+      The AI system is built around a pluggable model architecture where new models can be integrated without modifying the core inference pipeline. A central <code>ModelRegistry</code> maps model type identifiers to concrete model implementations, while a generic ROS2 inference node handles all communication with the rest of the robot system. This separation of concerns allows researchers and developers to focus on model logic without worrying about the robotics middleware layer.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>Key Design Principles</strong>
+      The AI system follows a configuration-driven approach: the model type, checkpoint path, input/output topics, and hardware acceleration settings are all specified in the system's Protocol Buffers configuration file. No code changes are required to switch between models.
+    </div>
+
+    <p>The AI system spans three major subsystems:</p>
+    <ul>
+      <li><strong>Inference Pipeline</strong> &mdash; Loads trained models via the registry, subscribes to perception topics (cameras, joint states), runs forward passes, and publishes action commands.</li>
+      <li><strong>Training Pipeline</strong> &mdash; Provides RL training (PPO via JAX/Flax with MuJoCo-XLA) and integration points for imitation learning using collected demonstration data.</li>
+      <li><strong>Data Collection</strong> &mdash; Records teleoperation sessions with episode indexing, producing datasets compatible with HuggingFace and LeRobot formats for downstream training.</li>
+    </ul>
+
+    <!-- Architecture Diagram -->
+    <h2 id="architecture-diagram">Architecture Diagram</h2>
+    <pre><code>+------------------------------------------------------------------+
+|                        AI SYSTEM LAYER                           |
++------------------------------------------------------------------+
+|                                                                  |
+|  +---------------------+    +------------------------------+     |
+|  |   Model Registry    |    |     Training Pipeline        |     |
+|  |   (Singleton)       |    |                              |     |
+|  |                     |    |  +----------+ +-----------+  |     |
+|  |  ModelType -> Class |    |  | MJX PPO  | | Isaac Sim |  |     |
+|  |  RANDOM_NOISE  --+  |    |  | JAX/Flax | | RL Tasks  |  |     |
+|  |  SMOL_VLA  ------+  |    |  +----------+ +-----------+  |     |
+|  |  (extensible)    |  |    |         |                    |     |
+|  +------------------+--+    +---------|--------------------+     |
+|                     |                 |                           |
+|           +---------v---------+       |    +------------------+  |
+|           |    ModelBase      |       |    | Data Collection  |  |
+|           |  (Abstract Class) |       |    |                  |  |
+|           |                   |       |    | DataStore config |  |
+|           | handle_input()    |       |    | Episode indexing |  |
+|           | preprocess_input()|       |    | HF / LeRobot    |  |
+|           | inference()       |       |    | CSV / Parquet    |  |
+|           | postprocess()     |       |    +------------------+  |
+|           | forward()         |       |                          |
+|           +---------+---------+       |                          |
+|                     |                 |                          |
+|  +------------------v-----------------v---------------------+    |
+|  |              ROS2 Inference Node (inference.py)          |    |
+|  |                                                          |    |
+|  |  Config ---> Registry ---> Model Instance                |    |
+|  |  Subscribe: /camera/*, /joint_states, /task_description  |    |
+|  |  Publish:   /action_commands                             |    |
+|  +----------------------------------------------------------+    |
+|                                                                  |
++------------------------------------------------------------------+
+           |                                          ^
+           v                                          |
+   +---------------+                          +---------------+
+   |  Perception   |                          |   Actuators   |
+   |  (Cameras,    |                          |   (Servos,    |
+   |   Sensors)    |                          |    Motors)    |
+   +---------------+                          +---------------+</code></pre>
+
+    <!-- Model Architecture -->
+    <h2 id="model-base">ModelBase (Abstract Class)</h2>
+    <p>
+      <code>ModelBase</code> is the abstract base class that defines the standard interface every AI model must implement. It enforces a consistent data flow pattern: input handling, preprocessing, inference, and postprocessing. This ensures that all models, regardless of their internal architecture, can be seamlessly loaded and executed by the generic ROS2 inference node.
+    </p>
+
+    <pre><code>class ModelBase(ABC):
+    """Abstract base class for all JOSHUA AI models."""
+
+    def __init__(self, config: ModelConfig):
+        self.config = config
+        self.device = self._resolve_device()
+
+    @abstractmethod
+    def handle_input(self, ros_msg) -> dict:
+        """Convert ROS2 message(s) into a model-friendly dict."""
+        pass
+
+    @abstractmethod
+    def preprocess_input(self, raw_input: dict) -> Any:
+        """Normalize, resize, tokenize, or batch inputs for inference."""
+        pass
+
+    @abstractmethod
+    def inference(self, processed_input: Any) -> Any:
+        """Run the forward pass / model prediction."""
+        pass
+
+    @abstractmethod
+    def postprocess_output(self, raw_output: Any) -> dict:
+        """Convert model output to action commands dict."""
+        pass
+
+    def forward(self, ros_msg) -> dict:
+        """Full pipeline: handle -> preprocess -> infer -> postprocess."""
+        raw = self.handle_input(ros_msg)
+        processed = self.preprocess_input(raw)
+        output = self.inference(processed)
+        return self.postprocess_output(output)</code></pre>
+
+    <h4>Method Responsibilities</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Purpose</th>
+          <th>Input</th>
+          <th>Output</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>handle_input()</code></td>
+          <td>Converts ROS2 messages into a model-friendly dictionary</td>
+          <td>ROS2 message(s)</td>
+          <td><code>dict</code></td>
+        </tr>
+        <tr>
+          <td><code>preprocess_input()</code></td>
+          <td>Normalizes, resizes, tokenizes, or batches inputs</td>
+          <td><code>dict</code></td>
+          <td>Tensor / array</td>
+        </tr>
+        <tr>
+          <td><code>inference()</code></td>
+          <td>Runs the forward pass or model prediction</td>
+          <td>Tensor / array</td>
+          <td>Raw model output</td>
+        </tr>
+        <tr>
+          <td><code>postprocess_output()</code></td>
+          <td>Converts raw output to action command dictionary</td>
+          <td>Raw model output</td>
+          <td><code>dict</code></td>
+        </tr>
+        <tr>
+          <td><code>forward()</code></td>
+          <td>Orchestrates the full pipeline end-to-end</td>
+          <td>ROS2 message(s)</td>
+          <td><code>dict</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Model Registry -->
+    <h2 id="model-registry">ModelRegistry</h2>
+    <p>
+      The <code>ModelRegistry</code> implements the singleton pattern for centralized model discovery and instantiation. It maintains a mapping from <code>ModelType</code> enum values (defined in Protocol Buffers) to their corresponding model classes. When the inference node starts, it queries the registry with the configured model type to obtain the correct class, then instantiates it with the provided configuration.
+    </p>
+
+    <pre><code>class ModelRegistry:
+    """Singleton registry mapping ModelType enum to model classes."""
+
+    _instance = None
+    _registry: dict[ModelType, type[ModelBase]] = {}
+
+    @classmethod
+    def instance(cls) -> "ModelRegistry":
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    @classmethod
+    def register(cls, model_type: ModelType):
+        """Decorator to register a model class."""
+        def decorator(model_cls: type[ModelBase]):
+            cls._registry[model_type] = model_cls
+            return model_cls
+        return decorator
+
+    def get_model(self, model_type: ModelType, config: ModelConfig) -> ModelBase:
+        """Instantiate and return a model by type."""
+        if model_type not in self._registry:
+            raise ValueError(f"Unknown model type: {model_type}")
+        return self._registry[model_type](config)
+
+
+# Usage: registering a model
+@ModelRegistry.register(ModelType.SMOL_VLA)
+class SmolVLAModel(ModelBase):
+    ...</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Extensibility</strong>
+      New models are added by simply decorating a <code>ModelBase</code> subclass with <code>@ModelRegistry.register(ModelType.YOUR_TYPE)</code>. The registry automatically picks up the new model at startup.
+    </div>
+
+    <!-- ROS2 Inference Node -->
+    <h2 id="inference-node">ROS2 Inference Node</h2>
+    <p>
+      The <code>inference.py</code> module provides a generic ROS2 node that serves as the bridge between the robot's perception system and the AI model. It is model-agnostic: it loads whichever model is specified in the configuration, sets up the appropriate publishers and subscribers based on the model's input/output requirements, and delegates all data processing to the model's <code>forward()</code> method.
+    </p>
+
+    <pre><code>class InferenceNode(Node):
+    """Generic ROS2 node for AI model inference."""
+
+    def __init__(self, config: SystemConfig):
+        super().__init__("inference_node")
+        model_config = config.ai.model
+        registry = ModelRegistry.instance()
+
+        # Load model from registry
+        self.model = registry.get_model(model_config.type, model_config)
+
+        # Set up subscribers based on model input requirements
+        for topic in model_config.input_topics:
+            self.create_subscription(topic.msg_type, topic.name,
+                                     self._on_input, topic.qos)
+
+        # Set up publisher for action commands
+        self.action_pub = self.create_publisher(
+            ActionCommand, model_config.output_topic, 10)
+
+    def _on_input(self, msg):
+        """Callback: run model forward pass and publish actions."""
+        actions = self.model.forward(msg)
+        action_msg = self._dict_to_action_msg(actions)
+        self.action_pub.publish(action_msg)</code></pre>
+
+    <!-- Implemented Models -->
+    <h2 id="random-noise">Implemented Models: RandomNoise</h2>
+    <p>
+      The <code>RandomNoise</code> model is a test and demonstration model that generates random action values within configurable bounds. It does not perform any meaningful inference but serves a critical role in system integration testing: it validates the entire inference pipeline from ROS2 subscription through model execution to action command publishing, without requiring a GPU or trained weights.
+    </p>
+
+    <h4>Characteristics</h4>
+    <ul>
+      <li><strong>Purpose:</strong> System integration testing and pipeline validation</li>
+      <li><strong>Input:</strong> Any ROS2 message (ignored during processing)</li>
+      <li><strong>Output:</strong> Random action values within configurable noise bounds</li>
+      <li><strong>Dependencies:</strong> None (no GPU, no pretrained weights)</li>
+      <li><strong>Configuration:</strong> <code>noise_lower_bound</code> and <code>noise_upper_bound</code> parameters</li>
+    </ul>
+
+    <pre><code>@ModelRegistry.register(ModelType.RANDOM_NOISE)
+class RandomNoiseModel(ModelBase):
+    """Test model generating random action values."""
+
+    def __init__(self, config: ModelConfig):
+        super().__init__(config)
+        self.lower = config.params.get("noise_lower_bound", -1.0)
+        self.upper = config.params.get("noise_upper_bound", 1.0)
+        self.action_dim = config.action_dim
+
+    def handle_input(self, ros_msg) -> dict:
+        return {}  # No input processing needed
+
+    def preprocess_input(self, raw_input: dict) -> None:
+        return None  # No preprocessing needed
+
+    def inference(self, processed_input) -> np.ndarray:
+        return np.random.uniform(self.lower, self.upper,
+                                 size=self.action_dim)
+
+    def postprocess_output(self, raw_output: np.ndarray) -> dict:
+        return {"actions": raw_output.tolist()}</code></pre>
+
+    <!-- SmolVLA -->
+    <h2 id="smolvla">Implemented Models: SmolVLA (Vision-Language-Action)</h2>
+    <p>
+      <code>SmolVLA</code> is the production inference model integrated from the <a href="https://github.com/huggingface/lerobot" target="_blank">HuggingFace LeRobot</a> library. It is a Vision-Language-Action (VLA) model that processes multi-camera images, robot joint states, and natural language task descriptions to produce normalized action values for robot control.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>Pretrained Checkpoint</strong>
+      SmolVLA uses the <code>lerobot/smolvla_base</code> pretrained checkpoint from HuggingFace Hub, which has accumulated over 18,000 downloads. This checkpoint provides generalized manipulation capabilities that can be fine-tuned for specific tasks.
+    </div>
+
+    <h4>Input Processing</h4>
+    <ul>
+      <li><strong>Multi-camera images:</strong> Subscribes to multiple camera topics (e.g., <code>/camera/front/image_raw</code>, <code>/camera/wrist/image_raw</code>) and processes them as visual observations.</li>
+      <li><strong>Joint states:</strong> Current robot joint positions and velocities from <code>/joint_states</code>.</li>
+      <li><strong>Language task description:</strong> Natural language string describing the desired task (e.g., "pick up the red cube and place it on the plate").</li>
+    </ul>
+
+    <h4>Output</h4>
+    <ul>
+      <li>Normalized action values representing target joint positions or end-effector deltas.</li>
+      <li>Action values are denormalized in postprocessing to match the robot's physical joint limits.</li>
+    </ul>
+
+    <h4>Hardware Requirements</h4>
+    <ul>
+      <li><strong>GPU:</strong> CUDA-capable GPU required for real-time inference.</li>
+      <li><strong>VRAM:</strong> Minimum 4 GB recommended for the base checkpoint.</li>
+      <li><strong>Supported platforms:</strong> NVIDIA Jetson Orin Nano (ARM64), desktop GPUs (AMD64).</li>
+    </ul>
+
+    <pre><code>@ModelRegistry.register(ModelType.SMOL_VLA)
+class SmolVLAModel(ModelBase):
+    """Vision-Language-Action model from HuggingFace LeRobot."""
+
+    def __init__(self, config: ModelConfig):
+        super().__init__(config)
+        self.policy = AutoPolicy.from_pretrained(
+            config.checkpoint or "lerobot/smolvla_base"
+        )
+        self.policy.to(self.device)
+        self.policy.eval()
+
+    def handle_input(self, ros_msg) -> dict:
+        return {
+            "images": self._extract_images(ros_msg),
+            "joint_states": self._extract_joints(ros_msg),
+            "task": ros_msg.task_description,
+        }
+
+    def preprocess_input(self, raw_input: dict) -> dict:
+        images = self._resize_and_normalize(raw_input["images"])
+        joints = self._normalize_joints(raw_input["joint_states"])
+        return {
+            "observation.images": images,
+            "observation.state": joints,
+            "task": raw_input["task"],
+        }
+
+    def inference(self, processed_input: dict) -> torch.Tensor:
+        with torch.no_grad():
+            return self.policy.select_action(processed_input)
+
+    def postprocess_output(self, raw_output: torch.Tensor) -> dict:
+        actions = self._denormalize_actions(raw_output)
+        return {"actions": actions.cpu().numpy().tolist()}</code></pre>
+
+    <!-- Model Comparison -->
+    <h2 id="model-comparison">Model Comparison</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>RandomNoise</th>
+          <th>SmolVLA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Purpose</strong></td>
+          <td>Integration testing</td>
+          <td>Production inference</td>
+        </tr>
+        <tr>
+          <td><strong>Input Modalities</strong></td>
+          <td>None (ignores input)</td>
+          <td>Multi-camera images + joint states + language</td>
+        </tr>
+        <tr>
+          <td><strong>Output</strong></td>
+          <td>Random values in [lower, upper]</td>
+          <td>Normalized action values</td>
+        </tr>
+        <tr>
+          <td><strong>GPU Required</strong></td>
+          <td>No</td>
+          <td>Yes (CUDA)</td>
+        </tr>
+        <tr>
+          <td><strong>Pretrained Weights</strong></td>
+          <td>None</td>
+          <td>lerobot/smolvla_base (18k+ downloads)</td>
+        </tr>
+        <tr>
+          <td><strong>Dependencies</strong></td>
+          <td>NumPy only</td>
+          <td>PyTorch, HuggingFace Transformers, LeRobot</td>
+        </tr>
+        <tr>
+          <td><strong>Latency</strong></td>
+          <td>&lt; 1ms</td>
+          <td>~10&ndash;50ms (GPU-dependent)</td>
+        </tr>
+        <tr>
+          <td><strong>Use Case</strong></td>
+          <td>CI/CD, pipeline validation</td>
+          <td>Autonomous manipulation tasks</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Training Pipeline -->
+    <h2 id="training-overview">Training Pipeline</h2>
+    <p>
+      The training pipeline supports both reinforcement learning (RL) and imitation learning workflows. The entry point is <code>trainer.py</code>, which reads the training configuration and dispatches to the appropriate backend and method based on the specified training type.
+    </p>
+
+    <pre><code>+---------------------------------------------------------+
+|                   trainer.py (Entry Point)              |
+|                                                         |
+|  Reads TrainingConfig from .pbtxt                       |
+|  Dispatches to appropriate training backend:            |
+|                                                         |
+|  +-------------------+    +-------------------------+   |
+|  |    MJX PPO        |    |    Isaac Sim RL         |   |
+|  |  (mjx_rl.py)      |    |  (isaac_tasks/*.py)     |   |
+|  |                    |    |                         |   |
+|  |  JAX/Flax backend  |    |  NVIDIA Isaac backend   |   |
+|  |  MuJoCo-XLA envs   |    |  GPU-accelerated sim    |   |
+|  |  CleanRL-style PPO  |    |  Ant, Trileg tasks      |   |
+|  +-------------------+    +-------------------------+   |
+|                                                         |
++---------------------------------------------------------+</code></pre>
+
+    <!-- MJX PPO -->
+    <h2 id="mjx-ppo">MJX PPO (JAX/Flax)</h2>
+    <p>
+      The primary RL training implementation uses a CleanRL-style Proximal Policy Optimization (PPO) algorithm built on JAX and Flax. This backend leverages MuJoCo-XLA (MJX) for massively parallel environment simulation, running up to <strong>2048 environments simultaneously</strong> on a single GPU.
+    </p>
+
+    <h3>Actor-Critic Network Architecture</h3>
+    <pre><code>+------------------------------------------+
+|          Actor-Critic Network            |
+|       (Shared observation input)         |
++------------------------------------------+
+|                                          |
+|  Observation (state vector)              |
+|         |                                |
+|         v                                |
+|  +------------------+                    |
+|  | Dense(256) + ReLU |                    |
+|  +------------------+                    |
+|         |                                |
+|         v                                |
+|  +------------------+                    |
+|  | Dense(256) + ReLU |                    |
+|  +------------------+                    |
+|         |                                |
+|    +----+----+                           |
+|    |         |                           |
+|    v         v                           |
+| +------+  +-------+                     |
+| |Actor |  |Critic |                     |
+| |Head  |  |Head   |                     |
+| +------+  +-------+                     |
+|    |          |                          |
+|    v          v                          |
+| Actions   Value V(s)                    |
+| (mean)                                  |
++------------------------------------------+</code></pre>
+
+    <h4>PPO Training Details</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Hidden Layers</strong></td>
+          <td>256-256</td>
+          <td>Two hidden layers with 256 units each</td>
+        </tr>
+        <tr>
+          <td><strong>Activation</strong></td>
+          <td>ReLU</td>
+          <td>Rectified Linear Unit</td>
+        </tr>
+        <tr>
+          <td><strong>Parallel Envs</strong></td>
+          <td>2048</td>
+          <td>Simultaneous MuJoCo-XLA environments</td>
+        </tr>
+        <tr>
+          <td><strong>Advantage Estimation</strong></td>
+          <td>GAE</td>
+          <td>Generalized Advantage Estimation</td>
+        </tr>
+        <tr>
+          <td><strong>Loss Function</strong></td>
+          <td>Clipped PPO</td>
+          <td>Clipped surrogate objective with entropy bonus</td>
+        </tr>
+        <tr>
+          <td><strong>Framework</strong></td>
+          <td>JAX / Flax</td>
+          <td>JIT-compiled, GPU-accelerated training</td>
+        </tr>
+        <tr>
+          <td><strong>Checkpoint Format</strong></td>
+          <td>msgpack + JSON</td>
+          <td>Model weights (msgpack) with metadata (JSON)</td>
+        </tr>
+        <tr>
+          <td><strong>Visualization</strong></td>
+          <td>Live MuJoCo viewer</td>
+          <td>Real-time rendering during training</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Training Loop</h4>
+    <pre><code># Simplified MJX PPO training loop (mjx_rl.py)
+
+# Initialize 2048 parallel environments via MuJoCo-XLA
+env_state = jax.vmap(env.reset)(rng_keys)
+
+for update in range(num_updates):
+    # Collect rollouts across all parallel envs
+    for step in range(num_steps):
+        action, log_prob, value = agent.get_action_and_value(obs)
+        env_state = jax.vmap(env.step)(env_state, action)
+        buffer.store(obs, action, reward, done, log_prob, value)
+
+    # Compute advantages using GAE
+    advantages = compute_gae(rewards, values, dones,
+                             gamma=0.99, gae_lambda=0.95)
+
+    # PPO update with clipped objective
+    for epoch in range(update_epochs):
+        for batch in buffer.iterate_minibatches(batch_size):
+            loss = ppo_clipped_loss(batch, advantages, clip_coef=0.2)
+            params = optimizer.step(loss, params)
+
+    # Save checkpoint periodically
+    if update % save_interval == 0:
+        save_checkpoint(params, metadata, path="checkpoints/")
+
+    # Update live MuJoCo viewer
+    viewer.render(env_state)</code></pre>
+
+    <!-- MJX Environments -->
+    <h2 id="mjx-environments">MJX Environments</h2>
+    <p>
+      The MJX environment system provides a modular framework for defining RL tasks compatible with MuJoCo-XLA. Each environment implements standardized <code>reset</code>, <code>step</code>, <code>observation</code>, and <code>reward</code> functions. The modular design separates environment logic into composable "terms" for rewards, terminations, resets, and observations.
+    </p>
+
+    <h3>Environment Architecture</h3>
+    <pre><code>+------------------------------------------------------+
+|                  MJX Environment                     |
++------------------------------------------------------+
+|                                                      |
+|  reset(rng) ---------> initial MJX state             |
+|  step(state, action) -> next state + reward + done   |
+|                                                      |
+|  +------------------+  +------------------+          |
+|  |    Observations  |  |     Rewards      |          |
+|  |    (modular)     |  |    (modular)     |          |
+|  |                  |  |                  |          |
+|  |  joint_positions |  |  distance_reward |          |
+|  |  joint_velocities|  |  energy_penalty  |          |
+|  |  end_effector_pos|  |  success_bonus   |          |
+|  |  target_position |  |  alive_bonus     |          |
+|  +------------------+  +------------------+          |
+|                                                      |
+|  +------------------+  +------------------+          |
+|  |  Terminations    |  |     Resets       |          |
+|  |  (modular)       |  |    (modular)     |          |
+|  |                  |  |                  |          |
+|  |  out_of_bounds   |  |  randomize_target|          |
+|  |  max_steps       |  |  randomize_init  |          |
+|  |  self_collision  |  |  domain_randomize|          |
+|  +------------------+  +------------------+          |
+|                                                      |
++------------------------------------------------------+</code></pre>
+
+    <h4>Available Tasks</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Observation Space</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>reach</strong></td>
+          <td>Arm manipulation</td>
+          <td>Robot arm reaching a target position in 3D space</td>
+          <td>Joint positions + velocities + target position</td>
+        </tr>
+        <tr>
+          <td><strong>ant</strong></td>
+          <td>Locomotion</td>
+          <td>Quadruped ant locomotion (forward movement)</td>
+          <td>Body pose + joint angles + contact forces</td>
+        </tr>
+        <tr>
+          <td><strong>pick_place</strong></td>
+          <td>Manipulation</td>
+          <td>Pick up an object and place it at a goal location</td>
+          <td>Joint states + object pose + goal position</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Modular Terms</h4>
+    <p>Each task is composed of modular term functions that can be mixed and matched:</p>
+    <ul>
+      <li><strong>Reward terms:</strong> Distance-based rewards, energy penalties, success bonuses, alive bonuses. Combined with configurable weights.</li>
+      <li><strong>Termination terms:</strong> Out-of-bounds detection, maximum step limits, self-collision checks.</li>
+      <li><strong>Reset terms:</strong> Target position randomization, initial state randomization, domain randomization for sim-to-real transfer.</li>
+      <li><strong>Observation terms:</strong> Joint positions, joint velocities, end-effector position, target position, contact sensor readings.</li>
+    </ul>
+
+    <!-- Isaac Sim Integration -->
+    <h2 id="isaac-sim">Isaac Sim Integration</h2>
+    <p>
+      JOSHUA integrates with NVIDIA Isaac Sim for industrial-grade physics simulation and RL training. Isaac Sim provides photorealistic rendering, advanced contact physics, and GPU-accelerated simulation through its Omniverse platform.
+    </p>
+
+    <h4>Available Isaac Sim Tasks</h4>
+    <ul>
+      <li><strong>Ant:</strong> Quadruped locomotion task mirroring the MJX ant environment, enabling direct comparison between MuJoCo-XLA and Isaac Sim training backends.</li>
+      <li><strong>Trileg:</strong> Three-legged robot locomotion task specific to custom JOSHUA robot configurations, testing asymmetric gait learning.</li>
+    </ul>
+
+    <div class="callout callout-warn">
+      <strong>Isaac Sim Requirements</strong>
+      Isaac Sim integration requires NVIDIA GPU with driver version 525+ and Isaac Sim 2023.1+ installed. The Isaac Sim backend is optional and not required for core JOSHUA functionality.
+    </div>
+
+    <!-- Data Collection System -->
+    <h2 id="data-collection">Data Collection System</h2>
+    <p>
+      The data collection system records teleoperation demonstrations for use in imitation learning pipelines. It integrates with the teleoperation mode to capture synchronized sensor data, joint states, and action commands, organizing them into episodes for structured dataset creation.
+    </p>
+
+    <h3>DataStore Configuration</h3>
+    <p>
+      The <code>DataStore</code> configuration specifies how recorded demonstrations are stored and organized. It controls episode indexing, file format, storage backend, and metadata tagging.
+    </p>
+
+    <pre><code># Example DataStore configuration in .pbtxt
+data_store {
+  base_path: "/data/demonstrations"
+  format: HUGGINGFACE
+  episode_index: true
+  metadata {
+    robot_type: "so100_arm"
+    task: "pick_and_place"
+    operator: "human_expert"
+  }
+  storage {
+    type: LOCAL
+    # type: CLOUD  # for remote storage
+  }
+}</code></pre>
+
+    <h4>Episode Indexing</h4>
+    <p>
+      Each teleoperation session is recorded as a numbered episode. Episode indexing ensures organized dataset creation with consistent naming, automatic incrementing, and metadata association. Episodes contain timestamped frames of:
+    </p>
+    <ul>
+      <li>Camera images (all configured cameras)</li>
+      <li>Joint positions and velocities</li>
+      <li>Action commands (leader arm positions in teleoperation)</li>
+      <li>Task description metadata</li>
+    </ul>
+
+    <!-- Dataset Formats -->
+    <h2 id="dataset-formats">Dataset Formats</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Format</th>
+          <th>Description</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>HuggingFace Datasets</strong></td>
+          <td>Apache Arrow-backed columnar format with lazy loading</td>
+          <td>Large-scale training with streaming support</td>
+        </tr>
+        <tr>
+          <td><strong>CSV</strong></td>
+          <td>Plain-text comma-separated values</td>
+          <td>Quick inspection, simple analysis scripts</td>
+        </tr>
+        <tr>
+          <td><strong>JSONL</strong></td>
+          <td>Newline-delimited JSON for structured records</td>
+          <td>Flexible schema, metadata-rich recordings</td>
+        </tr>
+        <tr>
+          <td><strong>Parquet</strong></td>
+          <td>Columnar binary format with compression</td>
+          <td>Efficient storage, fast analytical queries</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Storage Backends</h4>
+    <ul>
+      <li><strong>Local filesystem:</strong> Direct storage on the robot's disk or an NFS mount. Best for low-latency recording during teleoperation.</li>
+      <li><strong>Cloud storage:</strong> Upload to S3-compatible object storage for centralized dataset management and team collaboration.</li>
+    </ul>
+
+    <h4>LeRobot Dataset Integration</h4>
+    <p>
+      The data collection system produces datasets directly compatible with the <a href="https://github.com/huggingface/lerobot" target="_blank">LeRobot dataset format</a>. This enables seamless use of collected demonstrations for fine-tuning SmolVLA and other LeRobot-compatible models through imitation learning. The format includes standardized observation keys, action normalization statistics, and episode boundary markers.
+    </p>
+
+    <!-- Inference Pipeline Flow -->
+    <h2 id="inference-pipeline">Inference Pipeline Flow</h2>
+    <p>
+      The end-to-end inference pipeline transforms a system configuration into real-time autonomous robot behavior. Below is the complete data flow from startup to action execution:
+    </p>
+
+    <pre><code>INFERENCE PIPELINE FLOW
+=======================
+
+1. STARTUP
+   .pbtxt Config
+       |
+       v
+   Parse ModelConfig (type, checkpoint, topics, device)
+       |
+       v
+   ModelRegistry.instance().get_model(type, config)
+       |
+       v
+   Model class instantiation (loads weights, moves to GPU)
+       |
+       v
+   ROS2 Inference Node created
+
+2. RUNTIME (per cycle)
+
+   /camera/front/image_raw ----+
+   /camera/wrist/image_raw ----+---> handle_input()
+   /joint_states --------------+         |
+   /task_description ----------+         v
+                                   preprocess_input()
+                                     - Resize images
+                                     - Normalize joints
+                                     - Tokenize language
+                                         |
+                                         v
+                                     inference()
+                                     - Forward pass (GPU)
+                                     - torch.no_grad()
+                                         |
+                                         v
+                                   postprocess_output()
+                                     - Denormalize actions
+                                     - Clip to joint limits
+                                         |
+                                         v
+                                   /action_commands (publish)
+                                         |
+                                         v
+                                   Robot Actuators Execute</code></pre>
+
+    <div class="callout callout-info">
+      <strong>Latency Considerations</strong>
+      The inference pipeline is designed for real-time operation. On an NVIDIA Jetson Orin Nano, SmolVLA inference typically completes within 10&ndash;50ms per cycle depending on input resolution and batch configuration. The ROS2 node's callback frequency is configurable to match the desired control rate.
+    </div>
+
+    <!-- Adding New Models -->
+    <h2 id="adding-models">Adding New Models</h2>
+    <p>
+      The AI system is designed for extensibility. Follow these steps to integrate a new model into the JOSHUA inference pipeline:
+    </p>
+
+    <h4>Step 1: Define the ModelType</h4>
+    <p>Add a new entry to the <code>ModelType</code> enum in the Protocol Buffers schema:</p>
+    <pre><code>// In proto/joshua.proto
+enum ModelType {
+  UNKNOWN_MODEL = 0;
+  RANDOM_NOISE = 1;
+  SMOL_VLA = 2;
+  MY_NEW_MODEL = 3;  // Add your new model type
+}</code></pre>
+
+    <h4>Step 2: Implement ModelBase</h4>
+    <p>Create a new class inheriting from <code>ModelBase</code> and implement all required methods:</p>
+    <pre><code># In ai/models/my_new_model.py
+
+from ai.model_base import ModelBase
+from ai.model_registry import ModelRegistry, ModelType
+
+@ModelRegistry.register(ModelType.MY_NEW_MODEL)
+class MyNewModel(ModelBase):
+    """Custom model implementation."""
+
+    def __init__(self, config):
+        super().__init__(config)
+        # Load your model weights, initialize components
+        self.net = load_my_network(config.checkpoint)
+
+    def handle_input(self, ros_msg) -> dict:
+        # Extract relevant data from ROS2 messages
+        return {"sensor_data": ros_msg.data}
+
+    def preprocess_input(self, raw_input: dict):
+        # Normalize, transform, batch
+        return self.transform(raw_input["sensor_data"])
+
+    def inference(self, processed_input):
+        # Run forward pass
+        return self.net(processed_input)
+
+    def postprocess_output(self, raw_output) -> dict:
+        # Convert to action commands
+        return {"actions": raw_output.tolist()}</code></pre>
+
+    <h4>Step 3: Register in ModelRegistry</h4>
+    <p>
+      The <code>@ModelRegistry.register()</code> decorator (shown above) handles registration automatically. Ensure that your model module is imported at startup so the decorator executes. Add the import to <code>ai/models/__init__.py</code>:
+    </p>
+    <pre><code># In ai/models/__init__.py
+from ai.models.random_noise import RandomNoiseModel
+from ai.models.smolvla import SmolVLAModel
+from ai.models.my_new_model import MyNewModel  # Add this import</code></pre>
+
+    <h4>Step 4: Create a Config Preset</h4>
+    <p>Create a <code>.pbtxt</code> configuration preset that uses your new model:</p>
+    <pre><code># In config/presets/my_new_model_inference.pbtxt
+operation_mode: AI_INFERENCE
+
+ai {
+  model {
+    type: MY_NEW_MODEL
+    checkpoint: "path/to/my_weights.pt"
+    input_topics {
+      name: "/camera/front/image_raw"
+      msg_type: "sensor_msgs/Image"
+    }
+    input_topics {
+      name: "/joint_states"
+      msg_type: "sensor_msgs/JointState"
+    }
+    output_topic: "/action_commands"
+    device: "cuda:0"
+  }
+}</code></pre>
+
+    <h4>Step 5: Verify Integration</h4>
+    <p>Run the inference pipeline with the RandomNoise model first to verify the pipeline, then switch to your model:</p>
+    <pre><code># Test pipeline with RandomNoise
+./run.sh --config config/presets/random_noise_test.pbtxt
+
+# Switch to your new model
+./run.sh --config config/presets/my_new_model_inference.pbtxt</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Checklist for Adding New Models</strong>
+      <ol>
+        <li>Add <code>ModelType</code> entry to the protobuf enum</li>
+        <li>Inherit from <code>ModelBase</code> and implement all abstract methods</li>
+        <li>Decorate with <code>@ModelRegistry.register(ModelType.YOUR_TYPE)</code></li>
+        <li>Add import to <code>ai/models/__init__.py</code></li>
+        <li>Create a <code>.pbtxt</code> config preset for the model</li>
+        <li>Test with the inference pipeline end-to-end</li>
+      </ol>
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

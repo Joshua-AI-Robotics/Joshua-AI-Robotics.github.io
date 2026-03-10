@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - JOSHUA Robotics Framework</title>
+  <meta name="description" content="Getting started guide for the JOSHUA robotics framework. Installation, building, configuration, and running your first robot.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html">Architecture</a></li>
+      <li><a href="getting-started.html" class="active">Getting Started</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="robot-layer.html">Robot Layer</a></li>
+      <li><a href="ai-system.html">AI System</a></li>
+      <li><a href="simulation.html">Simulation</a></li>
+      <li><a href="deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Docs Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>Getting Started</h4>
+      <a href="#prerequisites">Prerequisites</a>
+      <a href="#installation">Installation</a>
+      <a href="#native-installation">Native Installation</a>
+      <a href="#docker-installation">Docker Installation</a>
+      <a href="#building">Building the Project</a>
+      <a href="#first-robot">Running Your First Robot</a>
+      <a href="#configuration-presets">Configuration Presets</a>
+      <a href="#project-structure">Project Structure</a>
+      <a href="#next-steps">Next Steps</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Related Docs</h4>
+      <a href="architecture.html">System Architecture</a>
+      <a href="configuration.html">Configuration System</a>
+      <a href="robot-layer.html">Robot Layer</a>
+      <a href="ai-system.html">AI System</a>
+      <a href="simulation.html">Simulation</a>
+      <a href="deployment.html">Deployment</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+    <h1>Getting Started</h1>
+    <p>
+      This guide walks you through setting up the JOSHUA robotics framework on your development machine, building the project, and running your first robot configuration. JOSHUA supports both native installation on Ubuntu and containerized development via Docker.
+    </p>
+
+    <!-- Prerequisites -->
+    <h2 id="prerequisites">Prerequisites</h2>
+    <p>
+      Before installing JOSHUA, ensure your system meets the following requirements. JOSHUA supports two Ubuntu LTS releases, each paired with its corresponding ROS2 distribution.
+    </p>
+
+    <h3>Operating System</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Ubuntu Version</th>
+          <th>ROS2 Distribution</th>
+          <th>Python Version</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ubuntu 22.04 LTS (Jammy)</td>
+          <td>ROS2 Humble Hawksbill</td>
+          <td>Python 3.10</td>
+          <td>Fully supported</td>
+        </tr>
+        <tr>
+          <td>Ubuntu 24.04 LTS (Noble)</td>
+          <td>ROS2 Jazzy Jalisco</td>
+          <td>Python 3.12</td>
+          <td>Fully supported</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Required Software</h3>
+    <ul>
+      <li><strong>Bazel 8.3.1</strong> &mdash; Installed automatically via <a href="https://github.com/bazelbuild/bazelisk" target="_blank">Bazelisk</a>. Bazelisk manages the correct Bazel version based on the project's <code>.bazelversion</code> file.</li>
+      <li><strong>Python 3.10</strong> (Ubuntu 22.04) or <strong>Python 3.12</strong> (Ubuntu 24.04) &mdash; System default Python for the respective Ubuntu version.</li>
+      <li><strong>Git</strong> &mdash; For cloning the repository and version control.</li>
+    </ul>
+
+    <h3>Optional Software</h3>
+    <ul>
+      <li><strong>NVIDIA GPU with CUDA</strong> &mdash; Required for AI model training (SmolVLA, PPO reinforcement learning) and GPU-accelerated MuJoCo-XLA simulation. Not needed for teleoperation, basic simulation, or mock testing.</li>
+      <li><strong>Docker &amp; Docker Compose</strong> &mdash; For containerized development and deployment. Recommended for CI/CD workflows and cross-platform builds (AMD64/ARM64).</li>
+    </ul>
+
+    <div class="callout callout-info">
+      <strong>Note: Bazelisk as Bazel</strong>
+      Throughout this documentation, <code>bazel</code> commands assume you have Bazelisk installed and aliased as <code>bazel</code>. Bazelisk will automatically download and use Bazel 8.3.1 as specified in the project's <code>.bazelversion</code> file.
+    </div>
+
+    <!-- Installation -->
+    <h2 id="installation">Installation</h2>
+    <p>
+      JOSHUA provides two installation methods: native installation directly on Ubuntu, or Docker-based containerized development. Choose the method that best fits your workflow.
+    </p>
+
+    <!-- Native Installation -->
+    <h3 id="native-installation">Option A: Native Installation</h3>
+    <p>
+      Native installation gives you the fastest development experience with direct hardware access. The setup script auto-detects your Ubuntu version and installs all required dependencies.
+    </p>
+
+    <h4>1. Clone the Repository</h4>
+    <pre><code>git clone https://github.com/Joshua-AI-Robotics/Joshua.git
+cd Joshua</code></pre>
+
+    <h4>2. Run the Setup Script</h4>
+    <p>
+      JOSHUA provides a setup script that handles all dependency installation. Choose the environment that matches your use case:
+    </p>
+
+    <p><strong>Full Development Environment</strong> (includes all development tools, linters, testing frameworks):</p>
+    <pre><code>scripts/setup.sh --env=dev</code></pre>
+
+    <p><strong>Minimal Runtime Environment</strong> (only essential runtime dependencies):</p>
+    <pre><code>scripts/setup.sh --env=runtime</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Tip: What the Setup Script Installs</strong>
+      The setup script auto-detects your Ubuntu version (22.04 or 24.04) and installs the corresponding packages:
+      <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+        <li><strong>ROS2</strong> &mdash; Humble (Ubuntu 22.04) or Jazzy (Ubuntu 24.04) with core packages</li>
+        <li><strong>OpenCV</strong> &mdash; Computer vision library for camera processing</li>
+        <li><strong>Python dependencies</strong> &mdash; PyTorch, HuggingFace, JAX, and other AI/ML packages</li>
+        <li><strong>Docker &amp; Docker Compose</strong> &mdash; Container runtime for deployment</li>
+        <li><strong>Bazelisk</strong> &mdash; Bazel version manager (installs as <code>bazel</code>)</li>
+        <li><strong>System libraries</strong> &mdash; Protobuf, Boost, serial communication libraries</li>
+      </ul>
+    </div>
+
+    <h4>3. Source the ROS2 Environment</h4>
+    <p>After installation, source the ROS2 setup file. This must be done in every new terminal session:</p>
+
+    <p>For Ubuntu 22.04 (Humble):</p>
+    <pre><code>source /opt/ros/humble/setup.bash</code></pre>
+
+    <p>For Ubuntu 24.04 (Jazzy):</p>
+    <pre><code>source /opt/ros/jazzy/setup.bash</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Tip</strong>
+      Add the <code>source</code> command to your <code>~/.bashrc</code> file so it runs automatically in every new terminal session.
+    </div>
+
+    <!-- Docker Installation -->
+    <h3 id="docker-installation">Option B: Docker Installation</h3>
+    <p>
+      Docker provides a fully isolated, reproducible development environment. This is the recommended approach for CI/CD pipelines, cross-platform development, and quick evaluation of the framework.
+    </p>
+
+    <h4>1. Prerequisites</h4>
+    <p>Ensure Docker and Docker Compose are installed:</p>
+    <pre><code>sudo apt-get update
+sudo apt-get install docker.io docker-compose-v2
+sudo usermod -aG docker $USER</code></pre>
+    <p>Log out and back in for the group change to take effect.</p>
+
+    <h4>2. Clone and Start Containers</h4>
+    <pre><code>git clone https://github.com/Joshua-AI-Robotics/Joshua.git
+cd Joshua</code></pre>
+
+    <p>Start the container for your target platform:</p>
+    <pre><code># Ubuntu 22.04 (AMD64)
+docker-compose up joshua-u22
+
+# Ubuntu 24.04 (AMD64)
+docker-compose up joshua-u24
+
+# Ubuntu 22.04 (ARM64 - for Jetson Orin Nano)
+docker-compose up joshua-u22-arm64
+
+# Ubuntu 24.04 (ARM64)
+docker-compose up joshua-u24-arm64
+
+# Web UI only
+docker-compose up joshua-ui</code></pre>
+
+    <h4>Available Docker Services</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Platform</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>joshua-u22</code></td>
+          <td>Ubuntu 22.04 / AMD64</td>
+          <td>Full development environment with ROS2 Humble</td>
+        </tr>
+        <tr>
+          <td><code>joshua-u24</code></td>
+          <td>Ubuntu 24.04 / AMD64</td>
+          <td>Full development environment with ROS2 Jazzy</td>
+        </tr>
+        <tr>
+          <td><code>joshua-u22-arm64</code></td>
+          <td>Ubuntu 22.04 / ARM64</td>
+          <td>ARM64 environment for NVIDIA Jetson deployment</td>
+        </tr>
+        <tr>
+          <td><code>joshua-u24-arm64</code></td>
+          <td>Ubuntu 24.04 / ARM64</td>
+          <td>ARM64 environment with ROS2 Jazzy</td>
+        </tr>
+        <tr>
+          <td><code>joshua-ui</code></td>
+          <td>Any</td>
+          <td>React/TypeScript web monitoring UI</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <strong>Note: GPU Access in Docker</strong>
+      To use NVIDIA GPUs inside Docker containers for AI training, you need the <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html" target="_blank">NVIDIA Container Toolkit</a> installed on the host. Add <code>--gpus all</code> to your Docker run command or configure the <code>deploy</code> section in <code>docker-compose.yml</code>.
+    </div>
+
+    <!-- Building -->
+    <h2 id="building">Building the Project</h2>
+    <p>
+      JOSHUA uses Bazel for hermetic, reproducible builds. The build system supports both Ubuntu 22.04 and 24.04 through platform-specific configurations.
+    </p>
+
+    <h3>Full Build</h3>
+    <p>Build all targets in the project:</p>
+    <pre><code>bazel build //...</code></pre>
+
+    <h3>Run All Tests</h3>
+    <p>Execute the full test suite:</p>
+    <pre><code>bazel test //...</code></pre>
+
+    <h3>Platform-Specific Builds</h3>
+    <p>
+      The <code>.bazelrc</code> file provides platform-specific configurations. Use the <code>--config</code> flag to target a specific Ubuntu version:
+    </p>
+    <pre><code># Build for Ubuntu 22.04
+bazel build //... --config=u22
+
+# Build for Ubuntu 24.04
+bazel build //... --config=u24</code></pre>
+
+    <h3>Building Specific Targets</h3>
+    <p>You can build individual targets for faster iteration:</p>
+    <pre><code># Build only the main launcher
+bazel build //launcher:joshua_main
+
+# Build only robot drivers
+bazel build //robot/...
+
+# Build only AI inference modules
+bazel build //ai/...
+
+# Build only simulation targets
+bazel build //simulation/...</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Tip: Faster Builds</strong>
+      Bazel caches build artifacts aggressively. After the first full build, incremental builds will only recompile changed targets and their dependents. You can use <code>bazel build --jobs=auto</code> to automatically use the optimal number of parallel build jobs for your machine.
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>Warning: First Build Time</strong>
+      The initial build downloads all external dependencies (ROS2 packages, protobuf, Boost, etc.) and can take 15&ndash;30 minutes depending on your internet connection and hardware. Subsequent builds will be significantly faster due to caching.
+    </div>
+
+    <!-- Running Your First Robot -->
+    <h2 id="first-robot">Running Your First Robot</h2>
+    <p>
+      The JOSHUA launcher (<code>joshua_main</code>) is the central entry point for all robot operations. It reads a Protocol Buffers text configuration file (<code>.pbtxt</code>) that defines the complete system: hardware, sensors, AI models, communication, and operation mode.
+    </p>
+
+    <h3>The Mock Test Configuration</h3>
+    <p>
+      The simplest way to verify your installation is by running the mock test configuration. This preset uses mock (simulated) hardware drivers, so no physical robot hardware is required.
+    </p>
+    <pre><code>bazel run //launcher:joshua_main -- --config=config/config_preset/mock_py_test.pbtxt</code></pre>
+
+    <p>
+      The <code>mock_py_test.pbtxt</code> configuration does the following:
+    </p>
+    <ul>
+      <li>Instantiates mock servo motors and sensors using the Python-based driver backend</li>
+      <li>Sets up ROS2 nodes for sensor publishing and command subscription</li>
+      <li>Runs the Node Generator orchestrator to manage the lifecycle of all child processes</li>
+      <li>Validates the full configuration pipeline without requiring physical hardware</li>
+    </ul>
+
+    <div class="callout callout-info">
+      <strong>Note: How joshua_main Works</strong>
+      When you run <code>joshua_main</code>, it performs these steps in order:
+      <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+        <li>Parses the <code>.pbtxt</code> configuration file into Protocol Buffer objects</li>
+        <li>Validates configuration integrity (checks for port conflicts, missing dependencies, invalid parameters)</li>
+        <li>Determines the backend (C++ or Python) for each configured node</li>
+        <li>Spawns and manages child processes for each ROS2 node</li>
+        <li>Monitors node health and handles graceful shutdown on termination</li>
+      </ol>
+    </div>
+
+    <h3>Running Other Configurations</h3>
+    <p>
+      The general pattern for running any configuration preset is:
+    </p>
+    <pre><code>bazel run //launcher:joshua_main -- --config=config/config_preset/&lt;preset_name&gt;.pbtxt</code></pre>
+
+    <p>
+      For example, to run the interactive MuJoCo simulation:
+    </p>
+    <pre><code>bazel run //launcher:joshua_main -- --config=config/config_preset/sim_interactive.pbtxt</code></pre>
+
+    <!-- Configuration Presets -->
+    <h2 id="configuration-presets">Configuration Presets</h2>
+    <p>
+      JOSHUA ships with 25+ configuration presets in <code>config/config_preset/</code>. Each preset is a complete, ready-to-run system definition. The table below lists the available presets organized by operation mode.
+    </p>
+
+    <h3>Teleoperation Presets</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>so100_teleoperate</code></td>
+          <td>Teleoperation</td>
+          <td>Leader-follower teleoperation for SO-100 robot arm. Leader arm drives follower arm in real-time.</td>
+        </tr>
+        <tr>
+          <td><code>so100_teleoperate_data_collection</code></td>
+          <td>Teleoperation + Data</td>
+          <td>Teleoperation with episode recording for imitation learning dataset collection.</td>
+        </tr>
+        <tr>
+          <td><code>so100_keyboard_teleoperate</code></td>
+          <td>Teleoperation</td>
+          <td>Keyboard-controlled teleoperation for the SO-100 arm. Useful for quick testing.</td>
+        </tr>
+        <tr>
+          <td><code>so100_xbox_teleoperate</code></td>
+          <td>Teleoperation</td>
+          <td>Xbox controller-based teleoperation for the SO-100 arm.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>AI Inference Presets</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>so100_smolvla</code></td>
+          <td>AI Inference</td>
+          <td>SmolVLA vision-language-action model inference on SO-100 hardware. Takes camera input and natural language task descriptions.</td>
+        </tr>
+        <tr>
+          <td><code>so100_smolvla_data_collection</code></td>
+          <td>AI Inference + Data</td>
+          <td>SmolVLA inference with simultaneous data recording for evaluation.</td>
+        </tr>
+        <tr>
+          <td><code>so100_random_noise</code></td>
+          <td>AI Inference</td>
+          <td>Random noise action generation for testing the action pipeline without a trained model.</td>
+        </tr>
+        <tr>
+          <td><code>so100_decision_transformer</code></td>
+          <td>AI Inference</td>
+          <td>Decision Transformer model inference for sequential decision-making tasks.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Simulation Presets</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>sim_interactive</code></td>
+          <td>Simulation</td>
+          <td>Interactive MuJoCo simulation with GUI. Allows manual interaction with the simulated robot.</td>
+        </tr>
+        <tr>
+          <td><code>sim_passive</code></td>
+          <td>Simulation</td>
+          <td>Passive simulation playback of pre-recorded trajectories in the MuJoCo viewer.</td>
+        </tr>
+        <tr>
+          <td><code>sim_mirror</code></td>
+          <td>Simulation</td>
+          <td>Digital twin mode. Mirrors a physical robot's state in real-time via ROS2 topics.</td>
+        </tr>
+        <tr>
+          <td><code>sim_offscreen</code></td>
+          <td>Simulation</td>
+          <td>Headless offscreen rendering for data generation and batch simulation.</td>
+        </tr>
+        <tr>
+          <td><code>sim_mjx_training</code></td>
+          <td>Training</td>
+          <td>GPU-accelerated MuJoCo-XLA parallel training with 2048 simultaneous environments.</td>
+        </tr>
+        <tr>
+          <td><code>sim_ppo_training</code></td>
+          <td>Training</td>
+          <td>PPO reinforcement learning training loop using JAX/Flax with MuJoCo simulation.</td>
+        </tr>
+        <tr>
+          <td><code>sim_isaac</code></td>
+          <td>Simulation</td>
+          <td>NVIDIA Isaac Sim integration for industrial-grade physics simulation with USD assets.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Calibration &amp; Testing Presets</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>so100_calibrate</code></td>
+          <td>Calibration</td>
+          <td>Servo motor calibration for the SO-100 arm. Detects operational limits and publishes calibration data.</td>
+        </tr>
+        <tr>
+          <td><code>mock_py_test</code></td>
+          <td>Testing</td>
+          <td>Mock hardware with Python backend. Validates the full configuration pipeline without physical hardware.</td>
+        </tr>
+        <tr>
+          <td><code>mock_cpp_test</code></td>
+          <td>Testing</td>
+          <td>Mock hardware with C++ backend. Tests the C++ driver and node orchestration paths.</td>
+        </tr>
+        <tr>
+          <td><code>mock_camera_test</code></td>
+          <td>Testing</td>
+          <td>Mock camera sensor pipeline. Tests image capture, encoding, and ROS2 image topic publishing.</td>
+        </tr>
+        <tr>
+          <td><code>mock_lidar_test</code></td>
+          <td>Testing</td>
+          <td>Mock LiDAR sensor pipeline. Tests point cloud generation and ROS2 topic publishing.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Hardware-Specific Presets</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>so100_single_arm</code></td>
+          <td>Operation</td>
+          <td>Single SO-100 arm operation with full sensor suite (camera, encoders).</td>
+        </tr>
+        <tr>
+          <td><code>so100_dual_arm</code></td>
+          <td>Operation</td>
+          <td>Dual SO-100 arm configuration for bimanual manipulation tasks.</td>
+        </tr>
+        <tr>
+          <td><code>so100_mobile_base</code></td>
+          <td>Operation</td>
+          <td>SO-100 arm mounted on a mobile base with LiDAR navigation.</td>
+        </tr>
+        <tr>
+          <td><code>pybricks_spike</code></td>
+          <td>Operation</td>
+          <td>LEGO SPIKE Prime hub integration via Pybricks for educational robotics.</td>
+        </tr>
+        <tr>
+          <td><code>jetson_orin_deploy</code></td>
+          <td>Deployment</td>
+          <td>Optimized deployment configuration for NVIDIA Jetson Orin Nano edge computing.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>Tip: Start with Mock Presets</strong>
+      If you are new to JOSHUA, start with the <code>mock_py_test</code> preset. It exercises the full framework pipeline &mdash; configuration parsing, node orchestration, ROS2 communication &mdash; without needing any hardware. Once that works, try <code>sim_interactive</code> for a visual simulation experience.
+    </div>
+
+    <!-- Project Structure -->
+    <h2 id="project-structure">Project Structure</h2>
+    <p>
+      The JOSHUA repository is organized into clearly separated layers, each with its own Bazel <code>BUILD</code> files for independent builds and testing.
+    </p>
+
+    <pre><code>Joshua/
+├── ai/                     # AI inference models and training pipelines
+│   ├── model/              # Model implementations (SmolVLA, Decision Transformer)
+│   ├── training/           # RL training loops (PPO, MJX)
+│   └── registry/           # Model registry and factory
+├── config/                 # Configuration system
+│   ├── config_preset/      # Ready-to-run .pbtxt configuration presets
+│   └── proto/              # Protocol Buffers schema definitions
+├── launcher/               # joshua_main entry point and node generator
+├── robot/                  # Robot Hardware Abstraction Layer
+│   ├── actuator/           # Servo motors (STS3215, Pybricks)
+│   ├── sensor/             # Camera, LiDAR, encoder drivers
+│   ├── communication/      # Serial, Bluetooth, USB protocols
+│   └── mock/               # Mock drivers for testing
+├── simulation/             # MuJoCo simulation engine
+│   ├── mujoco/             # MuJoCo wrapper and modes
+│   ├── mjx/                # MuJoCo-XLA GPU training
+│   ├── isaac/              # NVIDIA Isaac Sim integration
+│   └── models/             # MJCF robot model files
+├── ui/                     # User interfaces
+│   ├── qt/                 # Qt6 C++ desktop control panel
+│   └── web/                # React/TypeScript web monitoring UI
+├── ros2/                   # ROS2 message definitions and utilities
+│   └── msg/                # Custom message types
+├── scripts/                # Setup, build, and deployment scripts
+│   └── setup.sh            # Automated environment setup
+├── docker/                 # Dockerfiles and docker-compose.yml
+├── third_party/            # Third-party dependencies (Bazel external)
+├── .bazelrc                # Bazel configuration (platform configs)
+├── .bazelversion           # Pinned Bazel version (8.3.1)
+├── BUILD                   # Root BUILD file
+├── MODULE.bazel            # Bazel module definition
+└── WORKSPACE               # Bazel workspace configuration</code></pre>
+
+    <div class="callout callout-info">
+      <strong>Note: Bazel Build Structure</strong>
+      Each directory contains its own <code>BUILD</code> file defining build targets, dependencies, and test rules. This enables fine-grained dependency tracking and fast incremental builds. You can build and test any subdirectory independently using Bazel target patterns like <code>bazel test //robot/actuator/...</code>.
+    </div>
+
+    <!-- Next Steps -->
+    <h2 id="next-steps">Next Steps</h2>
+    <p>
+      Now that you have JOSHUA installed and running, explore the following documentation to deepen your understanding of the framework:
+    </p>
+
+    <div class="card-grid" style="margin-top: 1.5rem;">
+      <a href="configuration.html" class="card" style="text-decoration: none;">
+        <h3>Configuration System &rarr;</h3>
+        <p>Learn the Protocol Buffers schema, understand every field in the <code>.pbtxt</code> files, and create your own custom configurations for new robot setups.</p>
+      </a>
+      <a href="robot-layer.html" class="card" style="text-decoration: none;">
+        <h3>Robot Hardware Layer &rarr;</h3>
+        <p>Explore the hardware abstraction layer, supported actuators and sensors, factory pattern instantiation, and how to add drivers for new hardware.</p>
+      </a>
+      <a href="ai-system.html" class="card" style="text-decoration: none;">
+        <h3>AI System &rarr;</h3>
+        <p>Understand the model registry, SmolVLA integration, reinforcement learning pipelines, and how to plug in your own AI models for inference.</p>
+      </a>
+      <a href="simulation.html" class="card" style="text-decoration: none;">
+        <h3>Simulation Engine &rarr;</h3>
+        <p>Dive into MuJoCo simulation modes, MJCF robot models, GPU-accelerated training with MuJoCo-XLA, and NVIDIA Isaac Sim integration.</p>
+      </a>
+      <a href="architecture.html" class="card" style="text-decoration: none;">
+        <h3>System Architecture &rarr;</h3>
+        <p>Get the full picture of JOSHUA's layered architecture, data flow, node orchestration, and the dual-layer data type system.</p>
+      </a>
+      <a href="deployment.html" class="card" style="text-decoration: none;">
+        <h3>Deployment &amp; CI/CD &rarr;</h3>
+        <p>Learn about Docker containerization, ARM64 cross-compilation for Jetson, GitHub Actions CI pipelines, and production deployment workflows.</p>
+      </a>
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

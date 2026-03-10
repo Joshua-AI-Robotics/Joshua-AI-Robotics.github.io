@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Architecture - JOSHUA Robotics Framework</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#38b2ac"/><path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/></svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html" class="active">Architecture</a></li>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="robot-layer.html">Robot Layer</a></li>
+      <li><a href="ai-system.html">AI System</a></li>
+      <li><a href="simulation.html">Simulation</a></li>
+      <li><a href="deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Documentation Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>On This Page</h4>
+      <a href="#system-overview">System Overview</a>
+      <a href="#layered-architecture">Layered Architecture</a>
+      <a href="#configuration-layer">Configuration Layer</a>
+      <a href="#launcher-layer">Launcher Layer</a>
+      <a href="#node-generator">Node Generator</a>
+      <a href="#robot-layer">Robot Layer (HAL)</a>
+      <a href="#ai-layer">AI Layer</a>
+      <a href="#ui-layer">User Interface Layer</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Data &amp; Types</h4>
+      <a href="#data-flow">Data Flow</a>
+      <a href="#dual-layer-data-types">Dual-Layer Data Types</a>
+      <a href="#action-packet">ActionPacket</a>
+      <a href="#perception-packet">PerceptionPacket</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Runtime</h4>
+      <a href="#backend-selection">Backend Selection</a>
+      <a href="#node-lifecycle">Node Lifecycle</a>
+      <a href="#cascading-shutdown">Cascading Shutdown</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Reference</h4>
+      <a href="#directory-structure">Directory Structure</a>
+      <a href="#ros2-integration">ROS2 Integration</a>
+      <a href="#message-types">Message Types</a>
+      <a href="#node-types">Node Types</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+    <h1>System Architecture</h1>
+    <p>Comprehensive technical reference for the JOSHUA (Joint Open-Source Humanoid Undertaking for Advancement) robotics framework architecture, covering the modular layered design, data flow, runtime behavior, and ROS2 integration.</p>
+
+    <div class="tech-badges">
+      <span class="tech-badge">C++17</span>
+      <span class="tech-badge">Python 3.10+</span>
+      <span class="tech-badge">ROS2</span>
+      <span class="tech-badge">Protocol Buffers</span>
+      <span class="tech-badge">Bazel</span>
+      <span class="tech-badge">MuJoCo</span>
+    </div>
+
+    <!-- ==================== SYSTEM OVERVIEW ==================== -->
+    <h2 id="system-overview">System Overview</h2>
+
+    <p>JOSHUA is a <strong>modular, configuration-driven robotics framework</strong> that transforms declarative configuration files into a running system of coordinated ROS2 nodes. The framework eliminates hard-coded robot definitions by using Protocol Buffer text-format files (<code>.pbtxt</code>) as the single source of truth for all robot behavior.</p>
+
+    <p>The core execution pipeline follows a straightforward path:</p>
+
+    <div class="callout callout-info">
+      <strong>Core Execution Pipeline</strong>
+      Configuration file (<code>.pbtxt</code>) is loaded by <code>joshua_main</code>, which invokes the <code>NodeGenerator</code> to parse, validate, and fork/exec individual child processes for each ROS2 node defined in the configuration.
+    </div>
+
+    <pre><code>┌─────────────┐     ┌──────────────┐     ┌────────────────┐     ┌──────────────────┐
+│  .pbtxt     │────▶│ joshua_main  │────▶│ NodeGenerator  │────▶│ fork() + execv() │
+│  Config     │     │  (entry)     │     │ (orchestrator) │     │  per ROS2 node   │
+└─────────────┘     └──────────────┘     └────────────────┘     └──────────────────┘</code></pre>
+
+    <p>This design means that adding a new sensor, changing an actuator, or reconfiguring the entire robot requires only editing a configuration file -- no recompilation, no code changes. The <code>NodeGenerator</code> handles all the complexity of determining backends, resolving dependencies, and managing process lifecycles.</p>
+
+    <div class="diagram-section">
+      <img src="../assets/images/project_joshua_diagram_napkin.png" alt="JOSHUA System Architecture Diagram">
+      <div class="diagram-caption">Figure 1: High-level system architecture showing the flow from configuration through node generation to running ROS2 processes.</div>
+    </div>
+
+    <!-- ==================== LAYERED ARCHITECTURE ==================== -->
+    <h2 id="layered-architecture">Layered Architecture</h2>
+
+    <p>JOSHUA is organized into six distinct layers, each with clearly defined responsibilities and interfaces. Layers communicate through well-defined boundaries, allowing any layer to be modified or replaced without affecting others.</p>
+
+    <pre><code>┌───────────────────────────────────────────────────────────────────┐
+│                    6. User Interface Layer                        │
+│                   Qt6 Desktop  |  React Web UI                   │
+├───────────────────────────────────────────────────────────────────┤
+│                       5. AI Layer                                 │
+│           Model Registry | Inference | Training Pipeline          │
+├───────────────────────────────────────────────────────────────────┤
+│                 4. Robot Layer (HAL)                               │
+│          Action (Actuators) | Perception (Sensors) | Comms        │
+├───────────────────────────────────────────────────────────────────┤
+│              3. Node Generator (Orchestrator)                     │
+│       Parse Config | Validate | Backend Select | fork+execv      │
+├───────────────────────────────────────────────────────────────────┤
+│                   2. Launcher Layer                                │
+│        joshua_main entry point | Mode routing (sim vs real)       │
+├───────────────────────────────────────────────────────────────────┤
+│                1. Configuration Layer                              │
+│              Protocol Buffers .pbtxt files                        │
+└───────────────────────────────────────────────────────────────────┘</code></pre>
+
+    <!-- Layer 1: Configuration -->
+    <h3 id="configuration-layer">Layer 1: Configuration Layer</h3>
+
+    <p>The foundation of the entire system. All robot behavior, node topology, hardware mappings, and operational parameters are declared in Protocol Buffer text-format (<code>.pbtxt</code>) files. This layer serves as the single source of truth for what the robot is and how it should operate.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Format</strong></td>
+          <td>Protocol Buffers text format (<code>.pbtxt</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Schema</strong></td>
+          <td>Defined in <code>.proto</code> files with strict type validation</td>
+        </tr>
+        <tr>
+          <td><strong>Scope</strong></td>
+          <td>Robot identity, node definitions, hardware mappings, operation mode, QoS settings, AI model paths</td>
+        </tr>
+        <tr>
+          <td><strong>Validation</strong></td>
+          <td>Parsed and validated by the <code>NodeGenerator</code> at startup before any processes are launched</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Key configuration elements include:</p>
+    <ul>
+      <li><strong>Robot identity</strong> -- name, model identifier, operational mode</li>
+      <li><strong>Node definitions</strong> -- node type, topic name, message type, QoS profile, backend preference</li>
+      <li><strong>Hardware mappings</strong> -- serial port paths, baud rates, device IDs, camera indices</li>
+      <li><strong>AI parameters</strong> -- model registry paths, inference batch sizes, checkpoint locations</li>
+      <li><strong>Simulation settings</strong> -- MJCF model paths, timestep, rendering options</li>
+    </ul>
+
+    <pre><code># Example: minimal .pbtxt configuration
+robot_config {
+  name: "so100_arm"
+  mode: MODE_TELEOPERATION
+
+  node {
+    type: CAMERA_PUBLISHER
+    topic_name: "/camera/image_raw"
+    message_type: "sensor_msgs/msg/Image"
+    qos_depth: 5
+    qos_reliability: BEST_EFFORT
+    camera_index: 0
+    preferred_backend: CPP
+  }
+
+  node {
+    type: ACTUATOR_SUBSCRIBER
+    topic_name: "/arm/commands"
+    message_type: "sensor_msgs/msg/JointState"
+    serial_port: "/dev/ttyUSB0"
+    baud_rate: 1000000
+    device_ids: [1, 2, 3, 4, 5, 6]
+  }
+}</code></pre>
+
+    <!-- Layer 2: Launcher -->
+    <h3 id="launcher-layer">Layer 2: Launcher Layer</h3>
+
+    <p>The <code>joshua_main</code> binary is the single entry point for the entire framework. It reads the configuration file, initializes ROS2, and routes execution based on the declared operation mode.</p>
+
+    <pre><code>joshua_main
+├── Parse CLI arguments (config path, overrides)
+├── Load and validate .pbtxt configuration
+├── Initialize ROS2 context
+├── Check operation mode
+│   ├── MODE_SIMULATION ──▶ Launch MuJoCo simulation engine
+│   └── All other modes ──▶ Instantiate NodeGenerator
+└── Enter main event loop</code></pre>
+
+    <p>The launcher layer is intentionally thin. Its sole responsibility is to bridge the configuration with the appropriate execution engine. For simulation mode, it delegates to the MuJoCo integration layer. For all real-hardware and AI modes, it instantiates the <code>NodeGenerator</code> to orchestrate the node topology.</p>
+
+    <!-- Layer 3: Node Generator -->
+    <h3 id="node-generator">Layer 3: Node Generator (Orchestrator)</h3>
+
+    <p>The <code>NodeGenerator</code> is the central orchestration engine of JOSHUA. It transforms the declarative configuration into a running system of processes. This is the most complex layer, responsible for configuration parsing, validation, backend selection, process lifecycle management, and graceful shutdown coordination.</p>
+
+    <div class="callout callout-tip">
+      <strong>Design Principle</strong>
+      Each ROS2 node runs as an independent child process, forked and exec'd by the NodeGenerator. This provides process isolation -- a crash in one node does not bring down the entire system.
+    </div>
+
+    <p>The NodeGenerator performs the following steps in sequence:</p>
+
+    <ol>
+      <li><strong>Parse configuration</strong> -- Deserialize the <code>.pbtxt</code> file into the internal protobuf representation</li>
+      <li><strong>Validate configuration</strong> -- Check for required fields, valid enum values, port conflicts, and device availability</li>
+      <li><strong>Determine backend</strong> -- For each node, decide whether to use the C++ or Python implementation based on node type, hardware requirements, and availability</li>
+      <li><strong>Fork and exec</strong> -- For each validated node, call <code>fork()</code> to create a child process, then <code>execv()</code> to replace it with the appropriate node binary</li>
+      <li><strong>Monitor children</strong> -- Track all child PIDs, handle <code>SIGCHLD</code> signals, and manage the process lifecycle</li>
+    </ol>
+
+    <h4>Process Lifecycle Signals</h4>
+
+    <p>The NodeGenerator manages child processes using a cascading signal strategy:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Signal</th>
+          <th>Purpose</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SIGINT</code></td>
+          <td>Graceful shutdown request</td>
+          <td>Sent first; allows nodes to clean up resources, flush buffers, and disconnect hardware</td>
+        </tr>
+        <tr>
+          <td><code>SIGTERM</code></td>
+          <td>Forceful termination request</td>
+          <td>Sent if the node does not exit within the grace period after SIGINT</td>
+        </tr>
+        <tr>
+          <td><code>SIGKILL</code></td>
+          <td>Immediate forced kill</td>
+          <td>Last resort if SIGTERM is also ignored; guarantees process termination</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Layer 4: Robot Layer -->
+    <h3 id="robot-layer">Layer 4: Robot Layer (HAL)</h3>
+
+    <p>The Robot Layer provides the Hardware Abstraction Layer (HAL) that isolates the framework from specific hardware implementations. It is divided into three subsystems:</p>
+
+    <h4>Action Subsystem (Actuators)</h4>
+    <p>Handles all output to the physical world. The action subsystem uses a factory pattern to instantiate the correct driver based on the configuration. Supported actuator types include:</p>
+    <ul>
+      <li><strong>STS3215 servo motors</strong> -- Serial TTL communication at up to 1Mbps, supporting position, speed, and torque control modes</li>
+      <li><strong>Pybricks motors</strong> -- Bluetooth Low Energy (BLE) communication for LEGO-compatible motors</li>
+      <li><strong>Mock actuators</strong> -- Software-only implementations for testing and development</li>
+    </ul>
+
+    <h4>Perception Subsystem (Sensors)</h4>
+    <p>Handles all input from the physical world. Each sensor type is published on its own ROS2 topic with configurable Quality of Service (QoS) settings:</p>
+    <ul>
+      <li><strong>Camera</strong> -- OpenCV-based capture with configurable resolution, frame rate, and encoding</li>
+      <li><strong>LiDAR</strong> -- LDS01 laser distance scanner for 2D mapping and obstacle detection</li>
+      <li><strong>Encoder</strong> -- Motor position feedback for closed-loop control</li>
+      <li><strong>IMU</strong> -- Inertial measurement for orientation and acceleration</li>
+    </ul>
+
+    <h4>Communication Subsystem</h4>
+    <p>Provides the transport layer for hardware communication:</p>
+    <ul>
+      <li><strong>Serial (UART/TTL)</strong> -- Boost.Asio-based asynchronous serial I/O for servo motors and LiDAR</li>
+      <li><strong>Bluetooth Low Energy (BLE)</strong> -- For wireless Pybricks motor communication</li>
+      <li><strong>USB</strong> -- For camera and other USB peripherals</li>
+    </ul>
+
+    <!-- Layer 5: AI Layer -->
+    <h3 id="ai-layer">Layer 5: AI Layer</h3>
+
+    <p>The AI layer provides a unified interface for model management, real-time inference, and training pipelines. It is designed to be model-agnostic, supporting multiple frameworks and model architectures through a common registry and inference protocol.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Technology</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Model Registry</strong></td>
+          <td>HuggingFace Hub</td>
+          <td>Versioned model storage, download, and caching; supports local and remote models</td>
+        </tr>
+        <tr>
+          <td><strong>Inference Nodes</strong></td>
+          <td>PyTorch, HuggingFace Transformers</td>
+          <td>Real-time model inference as ROS2 nodes; subscribes to sensor topics, publishes action commands</td>
+        </tr>
+        <tr>
+          <td><strong>Training Pipeline</strong></td>
+          <td>JAX/Flax, Stable-Baselines3, LeRobot</td>
+          <td>Reinforcement learning (PPO) and imitation learning; GPU-parallel via MuJoCo-XLA</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Inference nodes always run as Python processes (regardless of backend preference) because they depend on the PyTorch and HuggingFace ecosystems. The inference node subscribes to perception topics (camera images, joint states) and publishes action commands to actuator topics.</p>
+
+    <!-- Layer 6: UI Layer -->
+    <h3 id="ui-layer">Layer 6: User Interface Layer</h3>
+
+    <p>JOSHUA provides two complementary user interfaces for monitoring, control, and configuration:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Interface</th>
+          <th>Technology</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Desktop GUI</strong></td>
+          <td>Qt6 / C++</td>
+          <td>Real-time robot control, servo calibration, live telemetry visualization, direct hardware interaction</td>
+        </tr>
+        <tr>
+          <td><strong>Web UI</strong></td>
+          <td>React 18, Tailwind CSS, Radix UI, Vite</td>
+          <td>Remote monitoring, topology visualization, Zenoh SSE-based live data streaming, multi-robot dashboards</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Both interfaces connect to the running ROS2 system: the Qt6 desktop application communicates directly via ROS2 client libraries, while the React web UI uses a Zenoh bridge with Server-Sent Events (SSE) for real-time data streaming over HTTP.</p>
+
+    <!-- ==================== DATA FLOW ==================== -->
+    <h2 id="data-flow">Data Flow</h2>
+
+    <p>The complete data flow from configuration to running system follows a deterministic pipeline. Understanding this flow is essential for debugging and extending the framework.</p>
+
+    <pre><code>                            ┌──────────────────┐
+                            │   .pbtxt Config  │
+                            └────────┬─────────┘
+                                     │
+                                     ▼
+                            ┌──────────────────┐
+                            │   joshua_main    │
+                            └────────┬─────────┘
+                                     │
+                          ┌──────────┴──────────┐
+                          │                     │
+                          ▼                     ▼
+                 ┌─────────────────┐   ┌─────────────────┐
+                 │ MODE_SIMULATION │   │  All Other Modes │
+                 └────────┬────────┘   └────────┬────────┘
+                          │                     │
+                          ▼                     ▼
+                 ┌─────────────────┐   ┌─────────────────┐
+                 │  MuJoCo Engine  │   │  NodeGenerator   │
+                 └─────────────────┘   └────────┬────────┘
+                                                │
+                                    ┌───────────┼───────────┐
+                                    │           │           │
+                                    ▼           ▼           ▼
+                              ┌──────────┐ ┌──────────┐ ┌──────────┐
+                              │ Identify │ │  Check   │ │ fork() + │
+                              │  Nodes   │ │Integrity │ │ execv()  │
+                              └──────────┘ └──────────┘ └─────┬────┘
+                                                              │
+                                                              ▼
+                                                     ┌─────────────────┐
+                                                     │ Monitor Children│
+                                                     │  (SIGCHLD)      │
+                                                     └─────────────────┘</code></pre>
+
+    <h3>Step-by-Step Data Flow</h3>
+
+    <ol>
+      <li><strong>Configuration Loading</strong> -- <code>joshua_main</code> reads the <code>.pbtxt</code> file from the path specified on the command line.</li>
+      <li><strong>Mode Routing</strong> -- If the configuration specifies <code>MODE_SIMULATION</code>, execution is routed to the MuJoCo simulation engine. All other modes proceed to the <code>NodeGenerator</code>.</li>
+      <li><strong>Node Identification</strong> -- The <code>NodeGenerator</code> iterates over all <code>node</code> entries in the configuration, building an internal list of nodes to launch.</li>
+      <li><strong>Integrity Check</strong> -- Each node is validated: required fields are present, device paths exist (for hardware nodes), model files are accessible (for inference nodes), and there are no topic name collisions.</li>
+      <li><strong>Process Spawning</strong> -- For each validated node, the <code>NodeGenerator</code> calls <code>fork()</code> to create a child process. The child process then calls <code>execv()</code> to replace itself with the appropriate node binary (C++ or Python).</li>
+      <li><strong>Child Monitoring</strong> -- The parent process (NodeGenerator) monitors all children via <code>SIGCHLD</code> handling. If a child crashes, the NodeGenerator logs the event and can optionally restart the node based on policy.</li>
+    </ol>
+
+    <!-- ==================== DUAL-LAYER DATA TYPE SYSTEM ==================== -->
+    <h2 id="dual-layer-data-types">Dual-Layer Data Type System</h2>
+
+    <p>JOSHUA employs a dual-layer data type system that separates <strong>configuration-time types</strong> from <strong>runtime types</strong>. This separation provides type safety at configuration time while maintaining compatibility with the ROS2 ecosystem at runtime.</p>
+
+    <div class="callout callout-info">
+      <strong>Why Two Layers?</strong>
+      Protocol Buffers provide rich schema validation, default values, and backward compatibility for configuration. ROS2 messages provide the standardized middleware transport that the robotics ecosystem expects. The dual-layer design gives you the best of both worlds.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Configuration Layer</th>
+          <th>Runtime Layer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Technology</strong></td>
+          <td>Protocol Buffers</td>
+          <td>ROS2 Messages</td>
+        </tr>
+        <tr>
+          <td><strong>Format</strong></td>
+          <td>Text format (<code>.pbtxt</code>)</td>
+          <td>Binary serialized messages</td>
+        </tr>
+        <tr>
+          <td><strong>Purpose</strong></td>
+          <td>Declare what the system should be</td>
+          <td>Transport data between running nodes</td>
+        </tr>
+        <tr>
+          <td><strong>Validation</strong></td>
+          <td>Schema-enforced at parse time</td>
+          <td>Type-checked at compile/import time</td>
+        </tr>
+        <tr>
+          <td><strong>When Used</strong></td>
+          <td>Startup, before nodes are launched</td>
+          <td>At runtime, during node communication</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>At the boundary between layers, protobuf-defined packets are serialized into ROS2 messages for transport. The two primary packet types are <code>ActionPacket</code> and <code>PerceptionPacket</code>.</p>
+
+    <!-- ActionPacket -->
+    <h3 id="action-packet">ActionPacket</h3>
+
+    <p>The <code>ActionPacket</code> encapsulates all outbound commands to actuators. It is a protobuf message that gets serialized into the payload of a ROS2 message for transport.</p>
+
+    <pre><code>message ActionPacket {
+  // Motor position targets (radians or raw encoder ticks)
+  repeated float position = 1;
+
+  // Torque limits per joint
+  repeated float torque = 2;
+
+  // Speed targets per joint (rad/s or raw units)
+  repeated float speed = 3;
+
+  // Preset command identifiers
+  repeated string preset_commands = 4;
+
+  // Timestamp for synchronization
+  google.protobuf.Timestamp timestamp = 5;
+}</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>position</code></td>
+          <td><code>repeated float</code></td>
+          <td>Target positions for each joint, in radians or raw encoder ticks depending on driver configuration</td>
+        </tr>
+        <tr>
+          <td><code>torque</code></td>
+          <td><code>repeated float</code></td>
+          <td>Maximum torque limits per joint; used for compliant control and safety limiting</td>
+        </tr>
+        <tr>
+          <td><code>speed</code></td>
+          <td><code>repeated float</code></td>
+          <td>Target velocities for velocity-mode control</td>
+        </tr>
+        <tr>
+          <td><code>preset_commands</code></td>
+          <td><code>repeated string</code></td>
+          <td>Named preset commands (e.g., <code>"home"</code>, <code>"rest"</code>, <code>"grip_open"</code>) resolved by the actuator driver</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PerceptionPacket -->
+    <h3 id="perception-packet">PerceptionPacket</h3>
+
+    <p>The <code>PerceptionPacket</code> encapsulates all inbound sensor data. Like the ActionPacket, it is defined in protobuf and serialized into ROS2 messages at runtime.</p>
+
+    <pre><code>message PerceptionPacket {
+  // Raw image data (camera frames)
+  ImageData image = 1;
+
+  // Joint positions, velocities, and efforts
+  PositionData position = 2;
+
+  // Generic sensor readings (IMU, force/torque, temperature)
+  SensorData sensor = 3;
+
+  // 3D point cloud from depth sensors or LiDAR
+  PointCloudData point_cloud = 4;
+
+  // Timestamp for synchronization
+  google.protobuf.Timestamp timestamp = 5;
+}</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>image</code></td>
+          <td><code>ImageData</code></td>
+          <td>Camera frames with encoding, resolution, and pixel data; maps to <code>sensor_msgs/msg/Image</code></td>
+        </tr>
+        <tr>
+          <td><code>position</code></td>
+          <td><code>PositionData</code></td>
+          <td>Joint states including position, velocity, and effort arrays; maps to <code>sensor_msgs/msg/JointState</code></td>
+        </tr>
+        <tr>
+          <td><code>sensor</code></td>
+          <td><code>SensorData</code></td>
+          <td>Generic sensor readings (IMU, force/torque, temperature); maps to appropriate <code>sensor_msgs</code> type</td>
+        </tr>
+        <tr>
+          <td><code>point_cloud</code></td>
+          <td><code>PointCloudData</code></td>
+          <td>3D point cloud data from depth cameras or LiDAR; maps to <code>sensor_msgs/msg/PointCloud2</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ==================== BACKEND SELECTION ==================== -->
+    <h2 id="backend-selection">Backend Selection Logic</h2>
+
+    <p>One of JOSHUA's key features is its ability to select between C++ and Python implementations for each node at launch time. The <code>NodeGenerator</code> uses a deterministic decision process based on node type, configuration preference, and binary availability.</p>
+
+    <h3>Selection Rules</h3>
+
+    <div class="callout callout-warn">
+      <strong>Important</strong>
+      Backend selection is per-node, not per-system. A single robot configuration can mix C++ and Python nodes freely. For example, a camera publisher might run in C++ for performance while an inference node runs in Python for framework compatibility.
+    </div>
+
+    <h4>C++ Preferred</h4>
+    <p>The following node types default to C++ implementations when available, due to performance requirements or hardware interface constraints:</p>
+    <ul>
+      <li><strong>STS3215 actuator drivers</strong> -- Requires precise timing for serial TTL communication at 1Mbps; C++ provides the deterministic timing needed</li>
+      <li><strong>OpenCV camera publishers</strong> -- C++ OpenCV bindings avoid the GIL overhead for high-framerate capture and encoding</li>
+      <li><strong>LDS01 LiDAR publishers</strong> -- Serial protocol parsing benefits from C++ performance for continuous scan data at high rotation speeds</li>
+    </ul>
+
+    <h4>Python Always</h4>
+    <p>The following node types always use Python implementations, regardless of the <code>preferred_backend</code> setting:</p>
+    <ul>
+      <li><strong>Inference nodes</strong> -- Depend on PyTorch and HuggingFace Transformers, which are Python-native libraries</li>
+      <li><strong>Data subscriber nodes</strong> -- Use Python data processing libraries (NumPy, pandas) for recording and dataset creation</li>
+      <li><strong>Mock device nodes</strong> -- Software-only simulated hardware for testing; Python provides rapid development</li>
+    </ul>
+
+    <h4>Fallback Behavior</h4>
+    <p>If a node's preferred backend is C++ but the corresponding C++ binary is not found (e.g., not compiled for the current platform), the <code>NodeGenerator</code> automatically falls back to the Python implementation. A warning is logged when this fallback occurs.</p>
+
+    <pre><code>Backend Selection Algorithm:
+─────────────────────────────────
+1. Read node.preferred_backend from config
+2. If node type ∈ {INFERENCE, DATA_SUBSCRIBER, MOCK_*}:
+   → Always use Python (override preference)
+3. If preferred_backend == CPP:
+   a. Look for C++ binary at expected path
+   b. If found → use C++ binary
+   c. If not found → log warning, fall back to Python
+4. If preferred_backend == PYTHON or unset:
+   → Use Python implementation
+5. execv() the resolved binary path</code></pre>
+
+    <!-- ==================== NODE LIFECYCLE ==================== -->
+    <h2 id="node-lifecycle">Node Lifecycle Management</h2>
+
+    <p>The <code>NodeGenerator</code> is responsible for the full lifecycle of every child process, from creation to termination. Understanding this lifecycle is critical for debugging node failures and implementing custom nodes.</p>
+
+    <h3>Lifecycle Phases</h3>
+
+    <pre><code>                    ┌──────────┐
+                    │  CONFIG  │  Node defined in .pbtxt
+                    └────┬─────┘
+                         │
+                         ▼
+                    ┌──────────┐
+                    │ VALIDATE │  Check fields, devices, paths
+                    └────┬─────┘
+                         │
+                         ▼
+                    ┌──────────┐
+                    │  FORK()  │  Create child process
+                    └────┬─────┘
+                         │
+                         ▼
+                    ┌──────────┐
+                    │ EXECV()  │  Replace with node binary
+                    └────┬─────┘
+                         │
+                         ▼
+                    ┌──────────┐
+                    │ RUNNING  │  Node is active, publishing/subscribing
+                    └────┬─────┘
+                         │
+                    ┌────┴────┐
+                    │         │
+                    ▼         ▼
+              ┌──────────┐  ┌──────────┐
+              │ CRASHED  │  │ SHUTDOWN │  Normal exit or signal
+              └──────────┘  └──────────┘</code></pre>
+
+    <h3 id="cascading-shutdown">Cascading Shutdown Sequence</h3>
+
+    <p>When the system receives a shutdown signal (e.g., Ctrl+C in the terminal), the <code>NodeGenerator</code> initiates a cascading shutdown of all child processes:</p>
+
+    <ol>
+      <li><strong>SIGINT</strong> -- Sent to all child processes simultaneously. Nodes should handle this signal to perform graceful cleanup: flushing data, disconnecting from hardware, and saving state.</li>
+      <li><strong>Grace period</strong> -- The NodeGenerator waits for a configurable timeout (default: 5 seconds) for all children to exit voluntarily.</li>
+      <li><strong>SIGTERM</strong> -- Sent to any child processes that have not exited after the grace period. This is a stronger request to terminate.</li>
+      <li><strong>Second grace period</strong> -- Another short wait (default: 2 seconds) for remaining processes.</li>
+      <li><strong>SIGKILL</strong> -- Sent as a last resort to any processes still running. This signal cannot be caught or ignored, guaranteeing termination.</li>
+    </ol>
+
+    <pre><code>Shutdown Timeline:
+─────────────────────────────────────────────────────────────▶ time
+│                │                    │              │
+│  SIGINT to all │  Wait 5s           │  SIGTERM     │  SIGKILL
+│  children      │  (grace period)    │  to stragglers│ (if needed)
+│                │                    │              │
+t=0              t=0                  t=5s           t=7s</code></pre>
+
+    <!-- ==================== DIRECTORY STRUCTURE ==================== -->
+    <h2 id="directory-structure">Directory Structure</h2>
+
+    <p>The JOSHUA repository follows a structured layout organized by function. Each top-level directory corresponds to a major subsystem or build concern.</p>
+
+    <pre><code>joshua/
+├── .github/                    # GitHub Actions CI/CD workflows
+│   └── workflows/
+│       ├── ci.yml              # Continuous integration pipeline
+│       └── docker-publish.yml  # Docker image build and push
+│
+├── config/                     # Configuration files (.pbtxt)
+│   ├── robots/                 # Per-robot configuration presets
+│   │   ├── so100_arm.pbtxt     # SO-100 single arm configuration
+│   │   ├── so100_leader_follower.pbtxt
+│   │   └── lego_bot.pbtxt      # Pybricks LEGO robot configuration
+│   └── proto/                  # Protocol Buffer schema definitions
+│       ├── robot_config.proto  # Main configuration schema
+│       ├── action_packet.proto # ActionPacket message definition
+│       └── perception_packet.proto
+│
+├── joshua/                     # Core framework source code
+│   ├── main/                   # Entry point
+│   │   └── joshua_main.cc      # Main binary (Launcher Layer)
+│   │
+│   ├── node_generator/         # Node Generator (Orchestrator)
+│   │   ├── node_generator.h    # NodeGenerator class definition
+│   │   ├── node_generator.cc   # Config parsing, fork+exec logic
+│   │   ├── backend_selector.h  # C++/Python backend selection
+│   │   └── backend_selector.cc
+│   │
+│   ├── robot/                  # Robot Layer (HAL)
+│   │   ├── action/             # Actuator drivers
+│   │   │   ├── sts3215/        # STS3215 servo motor driver (C++)
+│   │   │   ├── pybricks/       # Pybricks BLE motor driver (Python)
+│   │   │   └── factory.h       # Actuator factory pattern
+│   │   ├── perception/         # Sensor drivers
+│   │   │   ├── camera/         # OpenCV camera publisher (C++/Python)
+│   │   │   ├── lidar/          # LDS01 LiDAR publisher (C++/Python)
+│   │   │   ├── encoder/        # Encoder publisher
+│   │   │   └── factory.h       # Sensor factory pattern
+│   │   └── communication/      # Transport layer
+│   │       ├── serial/         # Boost.Asio serial driver
+│   │       └── ble/            # BLE communication
+│   │
+│   ├── ai/                     # AI Layer
+│   │   ├── model_registry/     # Model management and caching
+│   │   ├── inference/          # Inference node implementations
+│   │   │   └── smolvla/        # SmolVLA vision-language-action model
+│   │   └── training/           # Training pipelines
+│   │       ├── rl/             # Reinforcement learning (PPO)
+│   │       └── imitation/      # Imitation learning
+│   │
+│   └── simulation/             # Simulation Engine
+│       ├── mujoco/             # MuJoCo integration
+│       │   ├── engine.h        # Simulation engine interface
+│       │   ├── engine.cc       # MuJoCo physics stepping
+│       │   └── renderer.cc     # OpenGL/offscreen rendering
+│       ├── mjx/                # MuJoCo-XLA GPU-parallel training
+│       └── models/             # MJCF robot model files
+│           ├── so100.xml       # SO-100 arm MJCF model
+│           └── lego_bot.xml    # LEGO robot MJCF model
+│
+├── ui/                         # User Interface Layer
+│   ├── desktop/                # Qt6 desktop application
+│   │   ├── main.cc             # Qt6 entry point
+│   │   ├── control_panel.cc    # Robot control panel widget
+│   │   └── calibration.cc      # Servo calibration UI
+│   └── web/                    # React web application
+│       ├── src/
+│       │   ├── App.tsx         # Root React component
+│       │   ├── components/     # UI components
+│       │   └── hooks/          # Zenoh SSE data hooks
+│       ├── package.json
+│       └── vite.config.ts
+│
+├── third_party/                # Third-party dependencies (Bazel)
+│   ├── ros2/                   # ROS2 workspace overlay
+│   ├── mujoco/                 # MuJoCo headers and libraries
+│   └── protobuf/               # Protocol Buffers compiler
+│
+├── docker/                     # Docker build files
+│   ├── Dockerfile              # Multi-stage production image
+│   └── docker-compose.yml      # Development environment
+│
+├── tools/                      # Build and development tools
+│   ├── pre-commit/             # Pre-commit hook scripts
+│   └── scripts/                # Utility scripts
+│
+├── BUILD                       # Root Bazel build file
+├── WORKSPACE                   # Bazel workspace definition
+├── MODULE.bazel                # Bazel module (bzlmod)
+└── README.md</code></pre>
+
+    <!-- ==================== ROS2 INTEGRATION ==================== -->
+    <h2 id="ros2-integration">ROS2 Integration</h2>
+
+    <p>JOSHUA deeply integrates with ROS2 as its inter-process communication middleware. The framework supports ROS2 Humble (Ubuntu 22.04) and ROS2 Jazzy (Ubuntu 24.04) distributions.</p>
+
+    <h3 id="message-types">Supported Message Types</h3>
+
+    <p>JOSHUA supports <strong>91 message types</strong> across five ROS2 message packages. These types can be assigned to any node in the configuration, and the framework handles serialization, deserialization, and QoS negotiation automatically.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Package</th>
+          <th>Examples</th>
+          <th>Use Cases</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>std_msgs</code></td>
+          <td><code>String</code>, <code>Int32</code>, <code>Float64</code>, <code>Bool</code>, <code>Header</code></td>
+          <td>Generic data transport, status flags, timestamped headers</td>
+        </tr>
+        <tr>
+          <td><code>sensor_msgs</code></td>
+          <td><code>Image</code>, <code>JointState</code>, <code>LaserScan</code>, <code>PointCloud2</code>, <code>Imu</code></td>
+          <td>Camera frames, motor feedback, LiDAR scans, depth data, inertial measurements</td>
+        </tr>
+        <tr>
+          <td><code>nav_msgs</code></td>
+          <td><code>Odometry</code>, <code>Path</code>, <code>OccupancyGrid</code></td>
+          <td>Robot localization, path planning, map representation</td>
+        </tr>
+        <tr>
+          <td><code>geometry_msgs</code></td>
+          <td><code>Twist</code>, <code>Pose</code>, <code>Transform</code>, <code>Wrench</code>, <code>Vector3</code></td>
+          <td>Velocity commands, spatial positions, force/torque data</td>
+        </tr>
+        <tr>
+          <td><code>tf2_msgs</code></td>
+          <td><code>TFMessage</code></td>
+          <td>Coordinate frame transforms for the robot kinematic chain</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Configurable QoS</h3>
+
+    <p>Each node's Quality of Service profile is configurable through the <code>.pbtxt</code> file. This allows fine-tuning of communication behavior per topic:</p>
+
+    <pre><code># QoS configuration options per node
+qos_depth: 10                    # Message queue depth
+qos_reliability: BEST_EFFORT     # BEST_EFFORT or RELIABLE
+qos_durability: VOLATILE          # VOLATILE or TRANSIENT_LOCAL
+qos_history: KEEP_LAST            # KEEP_LAST or KEEP_ALL</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>QoS Best Practices</strong>
+      Use <code>BEST_EFFORT</code> reliability for high-frequency sensor data (cameras, LiDAR) where dropping occasional messages is acceptable. Use <code>RELIABLE</code> for command topics (actuator subscribers) where every message must be delivered.
+    </div>
+
+    <h3 id="node-types">Node Types</h3>
+
+    <p>JOSHUA defines seven standard node types, each with a specific role in the system. Custom node types can be added by extending the protobuf schema and implementing the corresponding publisher or subscriber.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Node Type</th>
+          <th>Direction</th>
+          <th>Description</th>
+          <th>Typical Backend</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CAMERA_PUBLISHER</code></td>
+          <td>Publisher</td>
+          <td>Captures frames from USB/CSI cameras and publishes as <code>sensor_msgs/msg/Image</code></td>
+          <td>C++</td>
+        </tr>
+        <tr>
+          <td><code>ENCODER_PUBLISHER</code></td>
+          <td>Publisher</td>
+          <td>Reads motor encoder positions and publishes as <code>sensor_msgs/msg/JointState</code></td>
+          <td>C++</td>
+        </tr>
+        <tr>
+          <td><code>LIDAR_PUBLISHER</code></td>
+          <td>Publisher</td>
+          <td>Reads LDS01 laser scanner data and publishes as <code>sensor_msgs/msg/LaserScan</code></td>
+          <td>C++</td>
+        </tr>
+        <tr>
+          <td><code>ACTUATOR_SUBSCRIBER</code></td>
+          <td>Subscriber</td>
+          <td>Receives joint commands and writes to servo motors via serial protocol</td>
+          <td>C++</td>
+        </tr>
+        <tr>
+          <td><code>INFERENCE</code></td>
+          <td>Pub/Sub</td>
+          <td>Subscribes to sensor topics, runs AI model inference, publishes action commands</td>
+          <td>Python (always)</td>
+        </tr>
+        <tr>
+          <td><code>DATA_SUBSCRIBER</code></td>
+          <td>Subscriber</td>
+          <td>Records topic data for training dataset creation (HuggingFace format)</td>
+          <td>Python (always)</td>
+        </tr>
+        <tr>
+          <td><code>OPERATIONAL_LIMIT_CALIBRATION</code></td>
+          <td>Pub/Sub</td>
+          <td>Runs servo calibration routines and publishes discovered operational limits</td>
+          <td>C++</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Example: Multi-Node Configuration</h3>
+
+    <p>The following example shows a complete configuration with multiple nodes working together for a teleoperation scenario:</p>
+
+    <pre><code>robot_config {
+  name: "so100_leader_follower"
+  mode: MODE_TELEOPERATION
+
+  # Leader arm - reads positions from human operator
+  node {
+    type: ENCODER_PUBLISHER
+    topic_name: "/leader/joint_states"
+    message_type: "sensor_msgs/msg/JointState"
+    serial_port: "/dev/ttyUSB0"
+    baud_rate: 1000000
+    device_ids: [1, 2, 3, 4, 5, 6]
+    qos_reliability: RELIABLE
+    preferred_backend: CPP
+  }
+
+  # Follower arm - mirrors leader positions
+  node {
+    type: ACTUATOR_SUBSCRIBER
+    topic_name: "/leader/joint_states"
+    message_type: "sensor_msgs/msg/JointState"
+    serial_port: "/dev/ttyUSB1"
+    baud_rate: 1000000
+    device_ids: [1, 2, 3, 4, 5, 6]
+    qos_reliability: RELIABLE
+    preferred_backend: CPP
+  }
+
+  # Camera for monitoring and data collection
+  node {
+    type: CAMERA_PUBLISHER
+    topic_name: "/camera/image_raw"
+    message_type: "sensor_msgs/msg/Image"
+    camera_index: 0
+    qos_reliability: BEST_EFFORT
+    qos_depth: 5
+    preferred_backend: CPP
+  }
+
+  # Data recorder for imitation learning
+  node {
+    type: DATA_SUBSCRIBER
+    topic_name: "/leader/joint_states"
+    message_type: "sensor_msgs/msg/JointState"
+    output_format: "parquet"
+    output_directory: "/data/episodes"
+  }
+}</code></pre>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

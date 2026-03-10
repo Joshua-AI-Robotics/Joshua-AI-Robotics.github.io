@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation Engine - JOSHUA Documentation</title>
+  <meta name="description" content="JOSHUA Simulation Engine documentation: MuJoCo physics simulation, GPU-accelerated training with MuJoCo-XLA, NVIDIA Isaac Sim integration, and multiple simulation modes.">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-brand">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
+        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
+      </svg>
+      JOSHUA
+    </a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="architecture.html">Architecture</a></li>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="robot-layer.html">Robot Layer</a></li>
+      <li><a href="ai-system.html">AI System</a></li>
+      <li><a href="simulation.html" class="active">Simulation</a></li>
+      <li><a href="deployment.html">Deployment</a></li>
+    </ul>
+    <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="nav-github" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Documentation Layout -->
+<div class="docs-layout">
+
+  <!-- Sidebar -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <h4>Overview</h4>
+      <a href="#overview" class="active">Simulation Engine</a>
+      <a href="#architecture">Architecture Overview</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>MuJoCo Engine</h4>
+      <a href="#mujoco-engine">Engine Wrapper</a>
+      <a href="#mujoco-lifecycle">Model &amp; Data Lifecycle</a>
+      <a href="#mujoco-methods">Core Methods</a>
+      <a href="#offscreen-rendering">Offscreen Rendering</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Simulation Modes</h4>
+      <a href="#mode-interactive">Interactive Mode</a>
+      <a href="#mode-passive">Passive Mode</a>
+      <a href="#mode-mirror">Mirror Mode (Digital Twin)</a>
+      <a href="#mode-offscreen">Offscreen Mode</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Robot Models</h4>
+      <a href="#robot-models">MJCF XML Models</a>
+      <a href="#model-so-arm100">SO-ARM100</a>
+      <a href="#model-ant">Ant Quadruped</a>
+      <a href="#model-isaac-usd">Isaac Sim USD</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>GPU Training</h4>
+      <a href="#gpu-training">MuJoCo-XLA (MJX)</a>
+      <a href="#mjx-architecture">MJX Architecture</a>
+      <a href="#ppo-training">PPO Training Pipeline</a>
+      <a href="#training-monitoring">Training Monitoring</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Isaac Sim</h4>
+      <a href="#isaac-sim">NVIDIA Isaac Sim</a>
+      <a href="#isaac-tasks">Tasks &amp; Environments</a>
+      <a href="#isaac-training">RL Training</a>
+    </div>
+    <div class="sidebar-section">
+      <h4>Data &amp; Config</h4>
+      <a href="#trajectory-data">Trajectory Data</a>
+      <a href="#configuration">Configuration</a>
+      <a href="#presets">Presets Reference</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+    <h1 id="overview">Simulation Engine</h1>
+    <p>
+      The JOSHUA Simulation Engine provides a comprehensive physics simulation environment built on
+      <strong>MuJoCo</strong> (Multi-Joint dynamics with Contact). It supports multiple operational modes
+      for development, testing, validation, and training&mdash;from interactive GUI manipulation to
+      GPU-accelerated reinforcement learning with thousands of parallel environments.
+    </p>
+
+    <div class="tech-badges">
+      <span class="tech-badge">MuJoCo</span>
+      <span class="tech-badge">MuJoCo-XLA (MJX)</span>
+      <span class="tech-badge">JAX/Flax</span>
+      <span class="tech-badge">NVIDIA Isaac Sim</span>
+      <span class="tech-badge">Gymnasium</span>
+      <span class="tech-badge">ROS2</span>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>Key Capabilities</strong>
+      The simulation engine serves as the foundation for sim-to-real transfer workflows. Train policies
+      in GPU-accelerated simulation, validate in high-fidelity MuJoCo environments, and deploy directly
+      to physical hardware&mdash;all driven by the same configuration system.
+    </div>
+
+    <h2 id="architecture">Architecture Overview</h2>
+    <p>
+      The simulation subsystem is organized into several layers that integrate with the broader JOSHUA framework:
+    </p>
+    <ul>
+      <li><strong>MuJoCo Engine</strong> &mdash; Core physics wrapper managing the <code>MjModel</code> and <code>MjData</code> lifecycle, stepping, control input, and rendering.</li>
+      <li><strong>Simulation Modes</strong> &mdash; Four distinct operational modes (Interactive, Passive, Mirror, Offscreen), each tailored for different development and deployment workflows.</li>
+      <li><strong>Robot Models (MJCF)</strong> &mdash; XML-based model descriptions with STL mesh assets for visual and collision geometry.</li>
+      <li><strong>GPU Training (MJX)</strong> &mdash; MuJoCo compiled to XLA operations via JAX for massively parallel reinforcement learning on GPU.</li>
+      <li><strong>NVIDIA Isaac Sim</strong> &mdash; Industrial-grade simulation integration with USD asset pipeline for advanced scenarios.</li>
+    </ul>
+
+    <pre><code>simulation/
+  mujoco_engine.py          # Core MuJoCo wrapper (MjModel + MjData lifecycle)
+  sim_interactive.py        # Interactive GUI viewer mode
+  sim_passive.py            # Trajectory replay mode
+  sim_mirror.py             # ROS2 digital twin mode
+  sim_offscreen.py          # Headless rendering mode
+  train_mjx.py              # GPU-accelerated PPO training via MJX
+  models/
+    so_arm100/
+      so_arm100.xml         # Base MJCF model
+      scene.xml             # Scene with environment (table, lighting)
+      scene_mjx.xml         # MJX-optimized scene
+      pick_place.xml        # Pick-and-place task model
+      pick_place_mjx.xml    # MJX pick-and-place variant
+      assets/               # STL mesh files for visual fidelity
+    ant/
+      ant.xml               # Quadruped locomotion model
+    isaac/
+      so100.usd             # NVIDIA Isaac Sim USD asset
+  trajectories/
+    so_arm100_example.csv   # Example trajectory data
+  isaac_sim/
+    tasks/                  # Isaac Sim task definitions
+    terms/                  # Reward, termination, observation terms</code></pre>
+
+    <!-- ==================== MuJoCo Engine ==================== -->
+    <h2 id="mujoco-engine">MuJoCo Engine</h2>
+    <p>
+      The core simulation wrapper is implemented in <code>simulation/mujoco_engine.py</code>. It encapsulates
+      the full MuJoCo simulation lifecycle, providing a clean Python interface for model loading, physics
+      stepping, control input, sensor readout, and rendering.
+    </p>
+
+    <h3 id="mujoco-lifecycle">Model &amp; Data Lifecycle</h3>
+    <p>
+      The engine manages two fundamental MuJoCo objects:
+    </p>
+    <ul>
+      <li><strong><code>MjModel</code></strong> &mdash; The compiled model containing the physics description (bodies, joints, actuators, sensors, contacts) loaded from an MJCF XML file. Immutable after compilation.</li>
+      <li><strong><code>MjData</code></strong> &mdash; The mutable simulation state (positions, velocities, forces, sensor readings) that evolves through time as the simulation steps forward.</li>
+    </ul>
+
+    <pre><code>import mujoco
+from simulation.mujoco_engine import MuJoCoEngine
+
+# Initialize engine with an MJCF model
+engine = MuJoCoEngine(model_path="simulation/models/so_arm100/scene.xml")
+
+# The engine manages:
+#   engine.model  -> mujoco.MjModel (compiled physics description)
+#   engine.data   -> mujoco.MjData  (mutable simulation state)
+
+# Reset simulation to initial state
+engine.reset()
+
+# Run simulation loop
+for _ in range(1000):
+    engine.set_ctrl([0.0, -0.5, 0.3, 0.0, 0.2, 0.0])  # Set actuator controls
+    engine.step()                                         # Advance physics
+    qpos = engine.get_qpos()                              # Read joint positions
+    sensor = engine.get_sensor("wrist_force")             # Read sensor data</code></pre>
+
+    <h3 id="mujoco-methods">Core Methods</h3>
+    <p>
+      The <code>MuJoCoEngine</code> class exposes the following primary methods:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>step()</code></td>
+          <td>Advances the simulation by one timestep. Calls <code>mujoco.mj_step(model, data)</code> internally, computing forward dynamics including contact forces, actuator responses, and constraint resolution.</td>
+        </tr>
+        <tr>
+          <td><code>set_ctrl(values)</code></td>
+          <td>Sets actuator control signals. Accepts a list or numpy array matching the number of actuators defined in the model. Values are applied at the next <code>step()</code> call.</td>
+        </tr>
+        <tr>
+          <td><code>get_qpos()</code></td>
+          <td>Returns the current generalized joint positions (<code>data.qpos</code>) as a numpy array. Includes both free joints (7-DOF) and hinge/slide joints (1-DOF each).</td>
+        </tr>
+        <tr>
+          <td><code>get_sensor(name)</code></td>
+          <td>Reads a named sensor value from the simulation state. Supports all MuJoCo sensor types: force, torque, accelerometer, gyroscope, touch, joint position, and joint velocity sensors.</td>
+        </tr>
+        <tr>
+          <td><code>render()</code></td>
+          <td>Renders the current simulation state. In interactive and passive modes, updates the GUI window. In offscreen mode, returns a pixel array via <code>mujoco.Renderer</code>.</td>
+        </tr>
+        <tr>
+          <td><code>reset()</code></td>
+          <td>Resets the simulation to its initial state. Calls <code>mujoco.mj_resetData(model, data)</code> and restores all joint positions, velocities, and control signals to their defaults defined in the MJCF model.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="offscreen-rendering">Offscreen Rendering</h3>
+    <p>
+      The engine supports headless (offscreen) rendering through <code>mujoco.Renderer</code>, enabling
+      camera image generation without a display. This is essential for data generation pipelines,
+      automated testing in CI environments, and vision-based training data collection.
+    </p>
+
+    <pre><code># Offscreen rendering for data generation
+engine = MuJoCoEngine(model_path="simulation/models/so_arm100/scene.xml")
+
+# Create offscreen renderer with specified resolution
+renderer = mujoco.Renderer(engine.model, height=480, width=640)
+
+# Render current state to pixel array
+renderer.update_scene(engine.data)
+pixels = renderer.render()  # Returns numpy array (H, W, 3) uint8
+
+# Use for computer vision training, visual validation, etc.
+import cv2
+cv2.imwrite("frame_0001.png", cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR))</code></pre>
+
+    <!-- ==================== Simulation Modes ==================== -->
+    <h2 id="simulation-modes">Simulation Modes</h2>
+    <p>
+      JOSHUA provides four distinct simulation modes, each designed for a specific stage of the
+      development workflow. The mode is selected through the <code>SimulationConfig.mode</code> field
+      in the configuration file.
+    </p>
+
+    <h3 id="mode-interactive">Interactive Mode</h3>
+    <p>
+      Interactive mode launches the full <strong>MuJoCo GUI viewer</strong>, providing a rich graphical
+      environment for direct robot manipulation, physics testing, and visual debugging. The viewer
+      supports mouse-based interaction with bodies and joints, real-time parameter adjustment, and
+      visualization of contacts, forces, and constraints.
+    </p>
+    <ul>
+      <li>Full MuJoCo viewer with 3D scene navigation (rotate, pan, zoom)</li>
+      <li>Direct manipulation of joints and bodies via mouse drag</li>
+      <li>Real-time visualization of contact points, force vectors, and constraint geometry</li>
+      <li>Adjustable simulation speed, pause, and single-step controls</li>
+      <li>Built-in rendering options for wireframe, collision geometry, and inertia visualization</li>
+    </ul>
+
+    <pre><code># Interactive mode - launches MuJoCo GUI viewer
+# Configuration preset: so_arm100_sim_interactive
+
+simulation {
+  mode: INTERACTIVE
+  model_path: "simulation/models/so_arm100/scene.xml"
+}
+
+# Programmatic usage:
+from simulation.sim_interactive import run_interactive
+run_interactive(model_path="simulation/models/so_arm100/scene.xml")</code></pre>
+
+    <div class="callout callout-tip">
+      <strong>Development Workflow</strong>
+      Interactive mode is the primary tool for iterating on MJCF model definitions. Use it to verify
+      joint ranges, actuator gains, contact properties, and visual appearance before running automated
+      training or validation pipelines.
+    </div>
+
+    <h3 id="mode-passive">Passive Mode</h3>
+    <p>
+      Passive mode <strong>replays pre-recorded trajectories</strong> from CSV files, providing a
+      visualization and validation tool without any active control. Joint positions are read from the
+      trajectory file and applied frame-by-frame to the MuJoCo model, allowing visual verification
+      of recorded motions.
+    </p>
+    <ul>
+      <li>Reads trajectory data from CSV files with timestamped joint positions</li>
+      <li>Frame-by-frame replay with configurable playback speed</li>
+      <li>Validates recorded trajectories against physics constraints</li>
+      <li>Useful for reviewing teleoperation recordings and training demonstrations</li>
+    </ul>
+
+    <pre><code># Passive mode - trajectory replay from CSV
+# Configuration preset: sim_passive
+
+simulation {
+  mode: PASSIVE
+  model_path: "simulation/models/so_arm100/scene.xml"
+  trajectory_path: "simulation/trajectories/so_arm100_example.csv"
+}
+
+# CSV format: each row is a timestep, columns are joint positions
+# timestamp, joint_1, joint_2, joint_3, joint_4, joint_5, joint_6
+# 0.000, 0.00, -0.50,  0.30, 0.00, 0.20, 0.00
+# 0.002, 0.01, -0.49,  0.31, 0.00, 0.21, 0.01
+# ...</code></pre>
+
+    <h3 id="mode-mirror">Mirror Mode (ROS2 Digital Twin)</h3>
+    <p>
+      Mirror mode creates a <strong>real-time digital twin</strong> that subscribes to ROS2 encoder
+      topics from the physical robot and mirrors its state in the MuJoCo simulation. This enables
+      live visualization of the real robot's motion, side-by-side comparison for debugging, and
+      sim-to-real calibration.
+    </p>
+    <ul>
+      <li>Subscribes to ROS2 encoder topics published by the physical robot's hardware layer</li>
+      <li>Uses configurable <strong>topic_mappings</strong> to map ROS2 topics to MuJoCo actuators</li>
+      <li>Supports <strong>offset values</strong> for real-to-sim coordinate mapping, compensating for differences between physical encoder zeros and simulation joint origins</li>
+      <li>Real-time synchronization with sub-millisecond latency on local ROS2 networks</li>
+      <li>Useful for teleoperation monitoring, safety validation, and sim-to-real gap analysis</li>
+    </ul>
+
+    <pre><code># Mirror mode - ROS2 digital twin
+# Configuration preset: sim_mirror
+
+simulation {
+  mode: MIRROR
+  model_path: "simulation/models/so_arm100/scene.xml"
+
+  mirror_topic_mappings {
+    mappings {
+      ros_topic: "/encoder/joint_1"
+      mujoco_actuator: "joint_1_position"
+      offset: 0.0        # Offset for real-to-sim coordinate alignment
+    }
+    mappings {
+      ros_topic: "/encoder/joint_2"
+      mujoco_actuator: "joint_2_position"
+      offset: -0.087     # Compensate for encoder zero vs sim origin
+    }
+    mappings {
+      ros_topic: "/encoder/joint_3"
+      mujoco_actuator: "joint_3_position"
+      offset: 0.052
+    }
+    mappings {
+      ros_topic: "/encoder/joint_4"
+      mujoco_actuator: "joint_4_position"
+      offset: 0.0
+    }
+    mappings {
+      ros_topic: "/encoder/joint_5"
+      mujoco_actuator: "joint_5_position"
+      offset: -0.034
+    }
+    mappings {
+      ros_topic: "/encoder/joint_6"
+      mujoco_actuator: "joint_6_position"
+      offset: 0.0
+    }
+  }
+}</code></pre>
+
+    <div class="callout callout-info">
+      <strong>Coordinate Mapping</strong>
+      The <code>offset</code> values in topic mappings compensate for the difference between the
+      physical robot's encoder zero positions and the MuJoCo model's joint origins. These offsets are
+      typically determined during the calibration process and ensure accurate digital twin visualization.
+    </div>
+
+    <h3 id="mode-offscreen">Offscreen Mode</h3>
+    <p>
+      Offscreen mode runs the simulation <strong>without any GUI</strong> (headless), rendering frames
+      to pixel arrays in memory. This mode is designed for automated pipelines where visual output is
+      consumed programmatically rather than displayed to a user.
+    </p>
+    <ul>
+      <li>Headless rendering via <code>mujoco.Renderer</code> &mdash; no display server required</li>
+      <li>Generates pixel arrays (numpy) for computer vision training data</li>
+      <li>Runs in CI/CD environments, Docker containers, and cloud instances</li>
+      <li>Configurable camera positions, resolution, and rendering options</li>
+      <li>Ideal for automated regression testing of robot behaviors</li>
+    </ul>
+
+    <pre><code># Offscreen mode - headless rendering for data generation
+# No GUI window, renders to memory buffers
+
+simulation {
+  mode: OFFSCREEN
+  model_path: "simulation/models/so_arm100/scene.xml"
+  render_width: 640
+  render_height: 480
+}
+
+# Programmatic usage:
+from simulation.sim_offscreen import run_offscreen
+
+frames = run_offscreen(
+    model_path="simulation/models/so_arm100/scene.xml",
+    trajectory_path="simulation/trajectories/so_arm100_example.csv",
+    width=640,
+    height=480
+)
+# frames: list of numpy arrays (H, W, 3) for each timestep</code></pre>
+
+    <!-- ==================== Robot Models ==================== -->
+    <h2 id="robot-models">Robot Models (MJCF XML)</h2>
+    <p>
+      Robot models are defined using MuJoCo's <strong>MJCF</strong> (MuJoCo XML Format), a declarative
+      specification for multi-body dynamics including kinematics, collision geometry, actuators, sensors,
+      visual appearance, and contact properties. JOSHUA includes several pre-built models.
+    </p>
+
+    <h3 id="model-so-arm100">SO-ARM100</h3>
+    <p>
+      The <strong>SO-ARM100</strong> is the primary robotic arm model used across JOSHUA's development
+      and training pipelines. Multiple MJCF variants are provided for different use cases:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Description</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>so_arm100.xml</code></td>
+          <td>Base robot model defining links, joints, actuators, and collision geometry</td>
+          <td>Component inclusion in scenes</td>
+        </tr>
+        <tr>
+          <td><code>scene.xml</code></td>
+          <td>Complete scene with the arm, table surface, lighting, and camera positions</td>
+          <td>Interactive and passive simulation</td>
+        </tr>
+        <tr>
+          <td><code>scene_mjx.xml</code></td>
+          <td>MJX-optimized scene with simplified contacts and convex collision geometry</td>
+          <td>GPU-accelerated training via MJX</td>
+        </tr>
+        <tr>
+          <td><code>pick_place.xml</code></td>
+          <td>Pick-and-place task scene with target objects and goal positions</td>
+          <td>Task-specific training and evaluation</td>
+        </tr>
+        <tr>
+          <td><code>pick_place_mjx.xml</code></td>
+          <td>MJX-optimized pick-and-place variant for GPU parallel training</td>
+          <td>Large-scale RL training for manipulation</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      The SO-ARM100 model includes <strong>STL mesh assets</strong> for high visual fidelity. These
+      meshes are stored in the <code>assets/</code> directory alongside the MJCF files and are referenced
+      via the <code>&lt;mesh&gt;</code> element in the XML. Visual meshes provide detailed rendering
+      while simplified collision geometry ensures efficient physics computation.
+    </p>
+
+    <pre><code>&lt;!-- Example MJCF structure for SO-ARM100 --&gt;
+&lt;mujoco model="so_arm100"&gt;
+  &lt;compiler meshdir="assets/" /&gt;
+
+  &lt;asset&gt;
+    &lt;mesh name="base_link" file="base_link.stl" /&gt;
+    &lt;mesh name="shoulder" file="shoulder_link.stl" /&gt;
+    &lt;mesh name="upper_arm" file="upper_arm_link.stl" /&gt;
+    &lt;mesh name="forearm" file="forearm_link.stl" /&gt;
+    &lt;mesh name="wrist" file="wrist_link.stl" /&gt;
+    &lt;mesh name="gripper" file="gripper_link.stl" /&gt;
+  &lt;/asset&gt;
+
+  &lt;worldbody&gt;
+    &lt;body name="base" pos="0 0 0"&gt;
+      &lt;geom type="mesh" mesh="base_link" /&gt;
+      &lt;body name="shoulder" pos="0 0 0.05"&gt;
+        &lt;joint name="joint_1" type="hinge" axis="0 0 1" range="-3.14 3.14" /&gt;
+        &lt;geom type="mesh" mesh="shoulder" /&gt;
+        &lt;!-- ... additional links and joints ... --&gt;
+      &lt;/body&gt;
+    &lt;/body&gt;
+  &lt;/worldbody&gt;
+
+  &lt;actuator&gt;
+    &lt;position name="joint_1_position" joint="joint_1" kp="50" /&gt;
+    &lt;position name="joint_2_position" joint="joint_2" kp="50" /&gt;
+    &lt;!-- ... additional actuators ... --&gt;
+  &lt;/actuator&gt;
+&lt;/mujoco&gt;</code></pre>
+
+    <h3 id="model-ant">Ant Quadruped</h3>
+    <p>
+      The <strong>Ant</strong> model is a standard quadruped locomotion benchmark widely used in the
+      reinforcement learning community. It serves as a validation target for JOSHUA's RL training
+      infrastructure, ensuring the MJX pipeline produces correct results on a well-understood problem
+      before training on custom robot models.
+    </p>
+    <ul>
+      <li>4-legged (8-DOF) locomotion platform from the Gymnasium/MuJoCo benchmark suite</li>
+      <li>Used to validate PPO training convergence and reward shaping</li>
+      <li>Available as both standard MuJoCo and MJX-compatible variants</li>
+      <li>Reference results available from published RL benchmarks for comparison</li>
+    </ul>
+
+    <h3 id="model-isaac-usd">NVIDIA Isaac Sim USD</h3>
+    <p>
+      For industrial-grade simulation scenarios, JOSHUA provides the <strong><code>so100.usd</code></strong>
+      asset for use with NVIDIA Isaac Sim. USD (Universal Scene Description) is the interchange format
+      for Isaac Sim, supporting high-fidelity physically-based rendering, domain randomization, and
+      integration with NVIDIA's simulation ecosystem.
+    </p>
+    <ul>
+      <li><code>simulation/models/isaac/so100.usd</code> &mdash; Full robot description in USD format</li>
+      <li>Compatible with Isaac Sim's PhysX-based physics engine</li>
+      <li>Supports material properties, articulation definitions, and sensor attachments</li>
+      <li>Enables domain randomization for robust sim-to-real transfer</li>
+    </ul>
+
+    <!-- ==================== GPU-Accelerated Training ==================== -->
+    <h2 id="gpu-training">GPU-Accelerated Training (MuJoCo-XLA)</h2>
+    <p>
+      JOSHUA integrates <strong>MuJoCo-XLA (MJX)</strong> for massively parallel, GPU-accelerated
+      reinforcement learning. MJX compiles MuJoCo's physics engine into XLA (Accelerated Linear Algebra)
+      operations, enabling the entire simulation to run on GPU through <strong>JAX</strong>.
+    </p>
+
+    <div class="callout callout-info">
+      <strong>Performance</strong>
+      MJX enables running <strong>2048 parallel environments simultaneously</strong> on a single GPU,
+      achieving orders-of-magnitude speedup compared to CPU-based simulation. This is critical for
+      sample-efficient reinforcement learning, where millions of environment interactions are required
+      for policy convergence.
+    </div>
+
+    <h3 id="mjx-architecture">MJX Architecture</h3>
+    <p>
+      The MJX training pipeline compiles the MuJoCo physics model into JAX-compatible operations that
+      execute entirely on GPU, avoiding CPU-GPU data transfer bottlenecks:
+    </p>
+
+    <pre><code>                     MuJoCo-XLA (MJX) Training Pipeline
+  +------------------------------------------------------------------+
+  |  MJCF XML Model                                                  |
+  |       |                                                          |
+  |       v                                                          |
+  |  MJX Compilation (mujoco.mjx)                                    |
+  |  Converts MjModel to XLA-compatible operations                   |
+  |       |                                                          |
+  |       v                                                          |
+  |  JAX JIT Compilation                                             |
+  |  Compiles step() + reward() into fused GPU kernels               |
+  |       |                                                          |
+  |       v                                                          |
+  |  Vectorized Environment (2048 parallel instances)                |
+  |  jax.vmap() maps single-env logic across batch dimension         |
+  |       |                                                          |
+  |       v                                                          |
+  |  PPO Training Loop (Actor-Critic Network)                        |
+  |  Collects rollouts -> Computes advantages -> Updates policy      |
+  |       |                                                          |
+  |       v                                                          |
+  |  Checkpoint Saving (msgpack + JSON metadata)                     |
+  +------------------------------------------------------------------+</code></pre>
+
+    <ul>
+      <li><strong>MJX Compilation</strong> &mdash; <code>mujoco.mjx</code> converts the <code>MjModel</code> into XLA-compatible tensors and operations. Contact detection, constraint solving, and forward dynamics are all expressed as differentiable JAX operations.</li>
+      <li><strong>JAX JIT</strong> &mdash; The complete simulation step (physics + reward computation) is JIT-compiled into fused GPU kernels, minimizing launch overhead.</li>
+      <li><strong>Vectorization</strong> &mdash; <code>jax.vmap()</code> maps the single-environment simulation across a batch dimension of 2048 environments, all executing in parallel on GPU.</li>
+      <li><strong>PPO Agent</strong> &mdash; The Actor-Critic neural network and PPO update logic are also implemented in JAX/Flax, keeping the entire training loop on GPU.</li>
+    </ul>
+
+    <h3 id="ppo-training">PPO Training Pipeline</h3>
+    <p>
+      The training implementation (<code>simulation/train_mjx.py</code>) uses Proximal Policy Optimization
+      (PPO) with an Actor-Critic architecture, implemented entirely in JAX/Flax for GPU execution:
+    </p>
+
+    <pre><code># GPU-accelerated training with MJX
+# Configuration preset: ant_train_mjx
+
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
+from simulation.train_mjx import train_mjx
+
+# Actor-Critic Network Architecture
+class ActorCritic(nn.Module):
+    action_dim: int
+
+    @nn.compact
+    def __call__(self, x):
+        # Shared feature extraction
+        x = nn.Dense(256)(x)
+        x = nn.relu(x)
+        x = nn.Dense(256)(x)
+        x = nn.relu(x)
+
+        # Actor head (policy)
+        mean = nn.Dense(self.action_dim)(x)
+        log_std = self.param('log_std', nn.initializers.zeros, (self.action_dim,))
+
+        # Critic head (value function)
+        value = nn.Dense(1)(x)
+
+        return mean, log_std, value
+
+# Training configuration
+training_config = {
+    "num_envs": 2048,              # Parallel environments on GPU
+    "num_steps": 10,               # Steps per rollout
+    "num_epochs": 4,               # PPO epochs per update
+    "minibatch_size": 256,         # Minibatch size for updates
+    "learning_rate": 3e-4,         # Adam learning rate
+    "gamma": 0.99,                 # Discount factor
+    "gae_lambda": 0.95,            # GAE lambda
+    "clip_epsilon": 0.2,           # PPO clipping parameter
+    "total_timesteps": 50_000_000, # Total training timesteps
+}
+
+# Launch training
+train_mjx(
+    model_path="simulation/models/ant/ant.xml",
+    config=training_config
+)</code></pre>
+
+    <h3 id="training-monitoring">Training Monitoring &amp; Checkpoints</h3>
+    <p>
+      The MJX training pipeline includes an <strong>integrated viewer</strong> for real-time monitoring
+      of training progress. During training, you can observe the policy's behavior across environments,
+      track reward curves, and evaluate convergence.
+    </p>
+    <ul>
+      <li><strong>Real-time viewer</strong> &mdash; Visualizes a subset of the 2048 parallel environments during training, showing the current policy's behavior live.</li>
+      <li><strong>Reward tracking</strong> &mdash; Logs mean episode return, episode length, and policy entropy across training iterations.</li>
+      <li><strong>Checkpoint saving</strong> &mdash; Model parameters are saved using <strong>msgpack</strong> serialization format with accompanying <strong>JSON metadata</strong> files containing training hyperparameters, step count, and performance metrics.</li>
+    </ul>
+
+    <pre><code># Checkpoint structure
+checkpoints/
+  ant_mjx_step_10000000/
+    params.msgpack        # Flax model parameters (msgpack serialized)
+    config.json           # Training hyperparameters and metadata
+    metrics.json          # Training metrics (rewards, losses, entropy)
+
+# Loading a checkpoint for evaluation
+from flax.serialization import from_bytes
+
+with open("checkpoints/ant_mjx_step_10000000/params.msgpack", "rb") as f:
+    params = from_bytes(None, f.read())
+
+# Resume training or deploy policy to physical robot</code></pre>
+
+    <!-- ==================== NVIDIA Isaac Sim ==================== -->
+    <h2 id="isaac-sim">NVIDIA Isaac Sim Integration</h2>
+    <p>
+      JOSHUA integrates with <strong>NVIDIA Isaac Sim</strong> for industrial-grade simulation scenarios
+      that require advanced rendering, domain randomization, and GPU-accelerated physics via PhysX.
+      Isaac Sim provides photorealistic rendering through RTX ray tracing, making it suitable for
+      vision-heavy sim-to-real transfer.
+    </p>
+
+    <h3 id="isaac-tasks">Tasks &amp; Environments</h3>
+    <p>
+      Isaac Sim environments are structured around <strong>tasks</strong> that define the complete
+      simulation scenario, including the robot, environment, observations, rewards, and termination
+      conditions. JOSHUA includes the following pre-built tasks:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Description</th>
+          <th>Robot</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ant Locomotion</td>
+          <td>Quadruped locomotion with velocity tracking and energy minimization rewards</td>
+          <td>Ant</td>
+        </tr>
+        <tr>
+          <td>Trileg Robot</td>
+          <td>Three-legged platform balancing and locomotion task</td>
+          <td>Trileg</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      Each task is composed of modular <strong>terms</strong> that define different aspects of the environment:
+    </p>
+    <ul>
+      <li><strong>Observation terms</strong> &mdash; Define what the agent observes (joint positions, velocities, body orientations, contact forces).</li>
+      <li><strong>Reward terms</strong> &mdash; Define the reward signal components (forward velocity, energy penalty, alive bonus, contact penalties).</li>
+      <li><strong>Termination terms</strong> &mdash; Define episode-ending conditions (body contact with ground, joint limit violations, timeout).</li>
+      <li><strong>Reset terms</strong> &mdash; Define how environments are reset (random initial positions, noise injection for domain randomization).</li>
+    </ul>
+
+    <pre><code># Isaac Sim task structure
+isaac_sim/
+  tasks/
+    ant_locomotion/
+      __init__.py
+      ant_env.py           # Environment definition
+      ant_env_cfg.py       # Environment configuration
+    trileg_robot/
+      __init__.py
+      trileg_env.py
+      trileg_env_cfg.py
+  terms/
+    observations.py        # Observation term implementations
+    rewards.py             # Reward term implementations
+    terminations.py        # Termination condition implementations
+    resets.py              # Environment reset implementations</code></pre>
+
+    <h3 id="isaac-training">RL Training with Isaac Sim</h3>
+    <p>
+      Isaac Sim environments integrate with standard RL training frameworks. JOSHUA supports training
+      via both <strong>stable-baselines3</strong> (for standard algorithms with minimal configuration)
+      and <strong>custom PPO</strong> implementations (for maximum control over the training loop):
+    </p>
+
+    <pre><code># Training with stable-baselines3
+from stable_baselines3 import PPO
+from isaac_sim.tasks.ant_locomotion import AntEnv
+
+env = AntEnv(num_envs=1024, device="cuda")
+
+model = PPO(
+    "MlpPolicy",
+    env,
+    learning_rate=3e-4,
+    n_steps=2048,
+    batch_size=64,
+    n_epochs=10,
+    verbose=1,
+    device="cuda"
+)
+
+model.learn(total_timesteps=10_000_000)
+model.save("isaac_ant_policy")
+
+# Custom PPO training is also supported via simulation/train_mjx.py patterns
+# adapted for Isaac Sim's environment interface</code></pre>
+
+    <h4>USD Asset Pipeline</h4>
+    <p>
+      Isaac Sim uses <strong>USD (Universal Scene Description)</strong> as its native scene format.
+      JOSHUA's <code>so100.usd</code> asset includes:
+    </p>
+    <ul>
+      <li>Articulation definitions with joint limits and drive properties</li>
+      <li>Collision geometry (convex decomposition for efficient PhysX simulation)</li>
+      <li>Visual meshes with PBR (Physically Based Rendering) materials</li>
+      <li>Sensor definitions (cameras, contact reporters, IMU)</li>
+    </ul>
+
+    <!-- ==================== Trajectory Data ==================== -->
+    <h2 id="trajectory-data">Trajectory Data</h2>
+    <p>
+      JOSHUA uses a simple <strong>CSV format</strong> for recording and replaying robot trajectories.
+      Trajectory files capture time-stamped joint positions that can be replayed in passive simulation
+      mode or used as demonstration data for imitation learning.
+    </p>
+
+    <h3>CSV Format</h3>
+    <p>
+      Each row represents a single timestep. The first column is the timestamp (in seconds from
+      episode start), and subsequent columns contain joint positions in radians:
+    </p>
+
+    <pre><code># simulation/trajectories/so_arm100_example.csv
+# Trajectory recording for SO-ARM100 (6-DOF)
+#
+# Format: timestamp, joint_1, joint_2, joint_3, joint_4, joint_5, joint_6
+# Units:  seconds,   radians, radians, radians, radians, radians, radians
+
+timestamp,joint_1,joint_2,joint_3,joint_4,joint_5,joint_6
+0.000, 0.000, -0.523,  0.349, 0.000, 0.174, 0.000
+0.002, 0.003, -0.520,  0.352, 0.001, 0.176, 0.002
+0.004, 0.008, -0.515,  0.358, 0.003, 0.180, 0.005
+0.006, 0.015, -0.507,  0.367, 0.006, 0.186, 0.009
+0.008, 0.024, -0.496,  0.378, 0.010, 0.194, 0.014
+...</code></pre>
+
+    <h3>Usage</h3>
+    <ul>
+      <li><strong>Passive mode replay</strong> &mdash; Trajectory files are loaded by <code>sim_passive.py</code> and applied to the simulation frame-by-frame for visual playback.</li>
+      <li><strong>Demonstration data</strong> &mdash; Recorded trajectories can serve as expert demonstrations for imitation learning pipelines.</li>
+      <li><strong>Validation</strong> &mdash; Compare real robot recordings against simulation replay to measure the sim-to-real gap.</li>
+      <li><strong>Example trajectories</strong> &mdash; Pre-recorded example trajectories for the SO-ARM100 are included in <code>simulation/trajectories/</code> for testing and demonstration purposes.</li>
+    </ul>
+
+    <!-- ==================== Configuration ==================== -->
+    <h2 id="configuration">Configuration</h2>
+    <p>
+      The simulation engine is configured through the <code>SimulationConfig</code> Protocol Buffers
+      message, which is part of JOSHUA's unified configuration system. All simulation parameters&mdash;mode,
+      model path, topic mappings, and rendering settings&mdash;are specified in the <code>.pbtxt</code>
+      configuration file.
+    </p>
+
+    <h3>SimulationConfig Proto</h3>
+    <pre><code>// Protocol Buffers schema for simulation configuration
+message SimulationConfig {
+  // Simulation mode
+  enum Mode {
+    INTERACTIVE = 0;   // Full MuJoCo GUI viewer
+    PASSIVE = 1;       // Trajectory replay from CSV
+    MIRROR = 2;        // ROS2 digital twin
+    OFFSCREEN = 3;     // Headless rendering
+  }
+  Mode mode = 1;
+
+  // Path to MJCF XML model file
+  string model_path = 2;
+
+  // Trajectory file path (used in PASSIVE mode)
+  string trajectory_path = 3;
+
+  // Mirror mode topic mappings (used in MIRROR mode)
+  MirrorTopicMappings mirror_topic_mappings = 4;
+
+  // Offscreen rendering dimensions (used in OFFSCREEN mode)
+  int32 render_width = 5;
+  int32 render_height = 6;
+}
+
+// Mapping between ROS2 encoder topics and MuJoCo actuators
+message MirrorTopicMappings {
+  repeated TopicMapping mappings = 1;
+}
+
+message TopicMapping {
+  string ros_topic = 1;           // ROS2 topic name (e.g., "/encoder/joint_1")
+  string mujoco_actuator = 2;    // MuJoCo actuator name (e.g., "joint_1_position")
+  float offset = 3;              // Real-to-sim coordinate offset (radians)
+}</code></pre>
+
+    <h3>Example Configurations</h3>
+
+    <h4>Interactive Simulation</h4>
+    <pre><code># Interactive mode - SO-ARM100 with full MuJoCo GUI
+# Preset: so_arm100_sim_interactive
+
+operation_mode: SIMULATION
+
+simulation {
+  mode: INTERACTIVE
+  model_path: "simulation/models/so_arm100/scene.xml"
+}</code></pre>
+
+    <h4>Passive Trajectory Replay</h4>
+    <pre><code># Passive mode - replay recorded trajectory
+# Preset: sim_passive
+
+operation_mode: SIMULATION
+
+simulation {
+  mode: PASSIVE
+  model_path: "simulation/models/so_arm100/scene.xml"
+  trajectory_path: "simulation/trajectories/so_arm100_example.csv"
+}</code></pre>
+
+    <h4>Mirror Digital Twin</h4>
+    <pre><code># Mirror mode - ROS2 digital twin of physical robot
+# Preset: sim_mirror
+
+operation_mode: SIMULATION
+
+simulation {
+  mode: MIRROR
+  model_path: "simulation/models/so_arm100/scene.xml"
+  mirror_topic_mappings {
+    mappings { ros_topic: "/encoder/joint_1" mujoco_actuator: "joint_1_position" offset: 0.0 }
+    mappings { ros_topic: "/encoder/joint_2" mujoco_actuator: "joint_2_position" offset: -0.087 }
+    mappings { ros_topic: "/encoder/joint_3" mujoco_actuator: "joint_3_position" offset: 0.052 }
+    mappings { ros_topic: "/encoder/joint_4" mujoco_actuator: "joint_4_position" offset: 0.0 }
+    mappings { ros_topic: "/encoder/joint_5" mujoco_actuator: "joint_5_position" offset: -0.034 }
+    mappings { ros_topic: "/encoder/joint_6" mujoco_actuator: "joint_6_position" offset: 0.0 }
+  }
+}</code></pre>
+
+    <h4>MJX GPU Training</h4>
+    <pre><code># MJX training mode - GPU-accelerated PPO on Ant quadruped
+# Preset: ant_train_mjx
+
+operation_mode: TRAINING
+
+training {
+  framework: MJX
+  model_path: "simulation/models/ant/ant.xml"
+  num_envs: 2048
+  total_timesteps: 50000000
+  checkpoint_dir: "checkpoints/ant_mjx"
+}</code></pre>
+
+    <h2 id="presets">Presets Reference</h2>
+    <p>
+      JOSHUA includes pre-built configuration presets for common simulation scenarios. These presets
+      can be loaded directly or used as starting points for custom configurations.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Preset Name</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>so_arm100_sim_interactive</code></td>
+          <td>Interactive</td>
+          <td>SO-ARM100 arm in full MuJoCo GUI viewer with scene environment (table, lighting). For manual testing and model iteration.</td>
+        </tr>
+        <tr>
+          <td><code>sim_passive</code></td>
+          <td>Passive</td>
+          <td>Trajectory replay from CSV for the SO-ARM100. Visualizes pre-recorded motions for validation and review.</td>
+        </tr>
+        <tr>
+          <td><code>sim_mirror</code></td>
+          <td>Mirror</td>
+          <td>ROS2 digital twin for SO-ARM100. Subscribes to encoder topics with calibrated offsets for real-time mirroring.</td>
+        </tr>
+        <tr>
+          <td><code>ant_train_mjx</code></td>
+          <td>MJX Training</td>
+          <td>GPU-accelerated PPO training on the Ant quadruped benchmark. 2048 parallel environments with integrated viewer.</td>
+        </tr>
+        <tr>
+          <td><code>so_arm100_train_mjx</code></td>
+          <td>MJX Training</td>
+          <td>GPU-accelerated training for SO-ARM100 manipulation tasks using the MJX-optimized scene variant.</td>
+        </tr>
+        <tr>
+          <td><code>so_arm100_pick_place_mjx</code></td>
+          <td>MJX Training</td>
+          <td>Pick-and-place task training with the MJX-optimized model. Includes object spawning and goal conditioning.</td>
+        </tr>
+        <tr>
+          <td><code>isaac_ant_locomotion</code></td>
+          <td>Isaac Sim</td>
+          <td>Ant locomotion training in NVIDIA Isaac Sim with PhysX physics and RTX rendering.</td>
+        </tr>
+        <tr>
+          <td><code>isaac_trileg</code></td>
+          <td>Isaac Sim</td>
+          <td>Trileg robot balancing and locomotion task in Isaac Sim with USD asset pipeline.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>Selecting a Preset</strong>
+      Load a preset by specifying its name in the JOSHUA launch command:
+      <code>joshua --preset so_arm100_sim_interactive</code>. Presets can be overridden with additional
+      command-line flags or by providing a custom <code>.pbtxt</code> configuration file that extends
+      the preset values.
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">
+      &copy; 2025 Project Joshua Contributors. Licensed under the MIT License.
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua" target="_blank">GitHub</a></li>
+      <li><a href="architecture.html">Documentation</a></li>
+      <li><a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/LICENSE" target="_blank">License</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
