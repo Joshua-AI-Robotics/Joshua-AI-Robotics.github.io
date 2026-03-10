@@ -13,10 +13,7 @@
 <nav class="nav">
   <div class="nav-inner">
     <a href="index.html" class="nav-brand">
-      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="32" height="32" rx="6" fill="#38b2ac"/>
-        <path d="M8 10h4v12H8zM14 8h4v14h-4zM20 12h4v8h-4z" fill="white"/>
-      </svg>
+      <img src="assets/images/logo.png" alt="JOSHUA" style="width:32px;height:32px;border-radius:6px;">
       JOSHUA
     </a>
     <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
@@ -92,8 +89,8 @@
   </div>
 
   <div class="diagram-section">
-    <img src="assets/images/project_joshua_core.png" alt="JOSHUA Core Architecture Diagram">
-    <div class="diagram-caption">Figure 1: JOSHUA Core Architecture &mdash; Configuration-driven robot system with modular layers for perception, action, AI inference, and simulation.</div>
+    <img src="assets/images/project_joshua_diagram_napkin.png" alt="JOSHUA System Architecture Diagram">
+    <div class="diagram-caption">Figure 1: JOSHUA System Architecture &mdash; Configuration-driven robot system from a single config file through ROS2 node orchestration to hardware operation.</div>
   </div>
 
   <div class="card-grid mt-3">
@@ -150,12 +147,7 @@
       <p>A layered, modular architecture where each component is independently configurable and replaceable.</p>
     </div>
 
-    <div class="diagram-section">
-      <img src="assets/images/project_joshua_diagram_napkin.png" alt="JOSHUA System Architecture Diagram">
-      <div class="diagram-caption">Figure 2: JOSHUA System Architecture &mdash; Layered design from configuration through node orchestration to hardware interaction.</div>
-    </div>
-
-    <div class="card-grid mt-3">
+    <div class="card-grid mt-2">
       <div class="card">
         <h3>Configuration Layer</h3>
         <p>Protocol Buffers schema defines the entire system: robot hardware, AI models, communication protocols, operation modes, and simulation settings. A single <code>.pbtxt</code> file configures the complete system.</p>
