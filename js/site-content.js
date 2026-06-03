@@ -57,18 +57,13 @@ window.JOSHUA_SITE = {
    */
   affiliations: [
     {
-      name: 'Your Lab or Group Name',
-      description: 'Department, university, or institution',
-      image: null,
-      url: null,
+      name: 'Mind Music Machine (tri-M) Lab',
+      description:
+        'Interdisciplinary HCI & HRI research at Virginia Tech — Grado Department of Industrial and Systems Engineering.',
+      image: 'assets/images/affiliations/trim-lab.png',
+      imageAlt: 'Mind Music Machine (tri-M) Lab logo',
+      url: 'https://trim.ise.vt.edu/index.html',
       linkLabel: 'Lab website',
-    },
-    {
-      name: 'Partner Organization',
-      description: 'Industry, nonprofit, or community partner',
-      image: null,
-      url: null,
-      linkLabel: 'Learn more',
     },
   ],
 };
