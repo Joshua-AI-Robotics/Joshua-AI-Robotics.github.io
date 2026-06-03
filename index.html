@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JOSHUA — Joint Open-Source Hub for Universal Automation</title>
+  <title>JOSHUA — Joint open-source hub for universal automation</title>
   <meta name="description" content="Project Joshua bridges AI/ML development and real-world robotics through decoupled, configuration-driven software on ROS 2 and Bazel.">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -23,9 +23,9 @@
 </nav>
 
 <main class="landing-main">
-  <header class="landing-header">
+  <header class="landing-hero">
     <h1>JOSHUA</h1>
-    <p class="landing-acronym">Joint Open-Source Hub for Universal Automation</p>
+    <p class="landing-tagline">Joint Open-Source Hub for Universal&nbsp;Automation</p>
   </header>
 
   <div class="tabs" role="tablist" aria-label="Site sections">
@@ -35,46 +35,80 @@
 
   <!-- Tab 1: Project -->
   <section class="tab-panel active" role="tabpanel" id="panel-project" aria-labelledby="tab-project">
-    <p class="lead">
-      Project Joshua is a modular software framework engineered to bridge the critical gap between advanced AI/ML development and real-world physical deployment.
-    </p>
-    <p class="lead lead-follow">
-      Historically, deploying AI onto robots has been a brittle, highly coupled process. Joshua solves this by decoupling software layers, enabling developers to deploy complex AI models across diverse robotic hardware with minimal friction.
-    </p>
+    <div class="prose">
+      <p class="lead">
+        Project Joshua is a modular software framework engineered to bridge the critical gap between advanced AI/ML development and real-world physical deployment.
+      </p>
+      <p class="lead lead-follow">
+        Historically, deploying AI onto robots has been a brittle, highly coupled process. Joshua solves this by decoupling software layers, enabling developers to deploy complex AI models across diverse robotic hardware with minimal friction.
+      </p>
+    </div>
 
-    <h2 class="panel-heading">Technical Backbone</h2>
-    <ul class="highlight-list">
-      <li><strong>OS</strong> — Ubuntu 22.04 LTS / 24.04 LTS</li>
-      <li><strong>Robotics &amp; build</strong> — ROS&nbsp;2 (messaging) + Bazel (hermetic, deterministic builds)</li>
-      <li><strong>Languages</strong> — Modern C++ &amp; Python</li>
-      <li><strong>Hardware</strong> — Cross-compilation for x86 and ARM64 (e.g. NVIDIA Jetson)</li>
-    </ul>
+    <section class="content-section">
+      <h2 class="section-title">Technical Backbone</h2>
+      <ul class="feature-grid">
+        <li class="feature-item">
+          <h3>OS</h3>
+          <p>Ubuntu 22.04 LTS / 24.04 LTS</p>
+        </li>
+        <li class="feature-item">
+          <h3>Robotics &amp; build</h3>
+          <p>ROS&nbsp;2 messaging with Bazel for hermetic, deterministic builds</p>
+        </li>
+        <li class="feature-item">
+          <h3>Languages</h3>
+          <p>Modern C++ and Python</p>
+        </li>
+        <li class="feature-item">
+          <h3>Hardware</h3>
+          <p>Cross-compilation for x86 and ARM64, including NVIDIA Jetson</p>
+        </li>
+      </ul>
+    </section>
 
-    <h2 class="panel-heading">Key Features &amp; Capabilities</h2>
-    <ul class="highlight-list">
-      <li><strong>Configuration-driven</strong> — Swap a single centralized config to run the same core stack on different form factors (e.g. robotic arm vs. mobile robot).</li>
-      <li><strong>Hardware Abstraction Layer (HAL)</strong> — Swap sensors and actuators or modify the robot without touching upstream AI models or the rest of the stack.</li>
-      <li><strong>Open ecosystem</strong> — ROS&nbsp;2 and Bazel backends enable drop-in integration with the broader open-source robotics ecosystem.</li>
-      <li><strong>Sim-to-real parity</strong> — Deploy models trained in simulation to physical robots via configuration toggles with zero code changes.</li>
-    </ul>
+    <section class="content-section">
+      <h2 class="section-title">Key Features</h2>
+      <ul class="feature-grid">
+        <li class="feature-item">
+          <h3>Configuration-driven</h3>
+          <p>One centralized config runs the same core stack on different robot form factors.</p>
+        </li>
+        <li class="feature-item">
+          <h3>Hardware abstraction</h3>
+          <p>Swap sensors and actuators without changing upstream AI or the rest of the stack.</p>
+        </li>
+        <li class="feature-item">
+          <h3>Open ecosystem</h3>
+          <p>ROS&nbsp;2 and Bazel integrate with the broader open-source robotics community.</p>
+        </li>
+        <li class="feature-item">
+          <h3>Sim-to-real</h3>
+          <p>Move from simulation to physical robots with configuration toggles—no code changes.</p>
+        </li>
+      </ul>
+    </section>
 
     <figure class="landing-figure">
-      <img src="assets/images/joshua_summary.png" alt="JOSHUA workflow: single config file to ROS2 node generator, action, perception, and AI nodes, operating a robot">
+      <img src="assets/images/joshua_summary.png" alt="Project Joshua workflow: single config file to ROS2 node generator, action, perception, and AI nodes, operating a robot">
     </figure>
 
-    <div class="cta-row">
-      <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        View on GitHub
+    <div class="cta-block">
+      <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="btn btn-primary btn-cta-main" target="_blank" rel="noopener noreferrer">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Get started on GitHub
       </a>
-      <a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">Documentation &amp; quick start</a>
-      <a href="https://github.com/Joshua-AI-Robotics" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">Organization</a>
+      <div class="cta-links">
+        <a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md" target="_blank" rel="noopener noreferrer">Documentation &amp; quick start</a>
+        <span class="cta-links-sep" aria-hidden="true">·</span>
+        <a href="https://github.com/Joshua-AI-Robotics" target="_blank" rel="noopener noreferrer">Organization</a>
+      </div>
     </div>
   </section>
 
   <!-- Tab 2: About Us (content from js/site-content.js) -->
   <section class="tab-panel" role="tabpanel" id="panel-about" aria-labelledby="tab-about" hidden>
     <p class="lead" id="about-intro"></p>
+    <p class="lead lead-follow" id="about-intro-follow" hidden></p>
 
     <h2 class="panel-heading">Founder</h2>
     <p class="panel-note" id="about-founder-note" hidden></p>
@@ -82,7 +116,7 @@
 
     <h2 class="panel-heading">Contributors</h2>
     <p class="panel-note" id="about-contributors-note"></p>
-    <ul class="contributor-list" id="contributors-list"></ul>
+    <ul class="people-grid" id="contributors-list"></ul>
 
     <h2 class="panel-heading">Affiliations</h2>
     <p class="panel-note" id="about-affiliations-note"></p>

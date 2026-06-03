@@ -24,7 +24,12 @@
     });
   });
 
-  var initial = (location.hash || '#project').slice(1);
-  if (initial !== 'project' && initial !== 'about') initial = 'project';
-  activate(initial);
+  function tabFromHash() {
+    var name = (location.hash || '#project').slice(1);
+    if (name !== 'project' && name !== 'about') name = 'project';
+    activate(name);
+  }
+
+  window.addEventListener('hashchange', tabFromHash);
+  tabFromHash();
 })();
