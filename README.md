@@ -1,12 +1,13 @@
 # Joshua AI Robotics Website
 
-This repository hosts the official website for Joshua AI Robotics.
+One-page site for [joshua-ai-robotics.org](https://joshua-ai-robotics.org) with two tabs:
 
-## Setup
+- **Project** — short overview and links to the [Joshua](https://github.com/Joshua-AI-Robotics/Joshua) repository
+- **About Us** — founder, contributors, and affiliations (edit [`js/site-content.js`](js/site-content.js); optional `linkedin` URLs for people; affiliation logos in `assets/images/affiliations/`)
 
-This site is hosted on GitHub Pages.
+Full documentation lives on GitHub: [Joshua README](https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md).
 
-### Custom Domain
+## Custom domain
 
-The domain `joshua.ai` is configured via the `CNAME` file.
+The domain is configured via the `CNAME` file (`joshua-ai-robotics.org`).
 
