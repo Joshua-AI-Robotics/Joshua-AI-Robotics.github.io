@@ -9,6 +9,7 @@ window.JOSHUA_SITE = {
     introFollowHtml:
       'We are based in the San Francisco Bay Area and work with collaborators locally and around the world.',
     founderNote: null,
+    coreTeamNote: null,
     contributorsNote: null,
     affiliationsNote: 'Research groups and partners collaborating on Joshua.',
   },
@@ -21,17 +22,12 @@ window.JOSHUA_SITE = {
     linkedin: 'https://www.linkedin.com/in/hye-sung-moon-03a35514a',
   },
 
-  /** { name?, github?, linkedin? } — github and linkedin are optional. */
-  contributors: [
+  /** Core team members. { name?, github?, linkedin? } */
+  coreTeam: [
     {
       name: 'DJ Kim',
       github: 'donegjookim',
       linkedin: 'https://www.linkedin.com/in/donegjookim',
-    },
-    {
-      name: 'Unghee Lee',
-      github: 'ungheele',
-      linkedin: 'https://www.linkedin.com/in/ung-hee-lee-81732212b/',
     },
     {
       name: 'Taesung Heo',
@@ -46,6 +42,15 @@ window.JOSHUA_SITE = {
     {
       name: 'Eric Oh',
       linkedin: 'https://www.linkedin.com/in/eric-oh-a0450b27/',
+    },
+  ],
+
+  /** { name?, github?, linkedin? } — github and linkedin are optional. */
+  contributors: [
+    {
+      name: 'Unghee Lee',
+      github: 'ungheele',
+      linkedin: 'https://www.linkedin.com/in/ung-hee-lee-81732212b/',
     },
   ],
 
@@ -169,9 +174,9 @@ window.JOSHUA_SITE = {
     container.innerHTML = personCardHtml(person);
   }
 
-  function renderContributors(container, list) {
+  function renderPeopleList(container, list, emptyMessage) {
     if (!list.length) {
-      container.innerHTML = '<p class="panel-note">No contributors listed.</p>';
+      container.innerHTML = '<p class="panel-note">' + escapeHtml(emptyMessage) + '</p>';
       return;
     }
     container.innerHTML = list
@@ -259,6 +264,12 @@ window.JOSHUA_SITE = {
       founderNote.hidden = !data.about.founderNote;
     }
 
+    var coreTeamNote = document.getElementById('about-core-team-note');
+    if (coreTeamNote) {
+      coreTeamNote.textContent = data.about.coreTeamNote || '';
+      coreTeamNote.hidden = !data.about.coreTeamNote;
+    }
+
     var contributorsNote = document.getElementById('about-contributors-note');
     if (contributorsNote) {
       contributorsNote.textContent = data.about.contributorsNote || '';
@@ -272,7 +283,16 @@ window.JOSHUA_SITE = {
     }
 
     renderFounder(document.getElementById('founder-list'), data.founder || null);
-    renderContributors(document.getElementById('contributors-list'), data.contributors || []);
+    renderPeopleList(
+      document.getElementById('core-team-list'),
+      data.coreTeam || [],
+      'No core team members listed.'
+    );
+    renderPeopleList(
+      document.getElementById('contributors-list'),
+      data.contributors || [],
+      'No contributors listed.'
+    );
     renderAffiliations(document.getElementById('affiliations-list'), data.affiliations || []);
   }
 
