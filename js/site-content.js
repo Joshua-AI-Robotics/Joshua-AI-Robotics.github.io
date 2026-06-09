@@ -5,7 +5,7 @@
 window.JOSHUA_SITE = {
   about: {
     introHtml:
-      '<a href="https://github.com/Joshua-AI-Robotics" target="_blank" rel="noopener noreferrer">Joshua AI Robotics</a> is the open-source community behind Project Joshua. We connect researchers, engineers, and partner labs who want robotics software that is modular, reproducible, and practical on real hardware.',
+      '<a We connect researchers, engineers, and partner labs who want robotics software that is modular, reproducible, and practical on real hardware.',
     introFollowHtml:
       'We are based in the San Francisco Bay Area and work with collaborators locally and around the world.',
     founderNote: null,
