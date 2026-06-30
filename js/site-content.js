@@ -39,10 +39,6 @@ window.JOSHUA_SITE = {
       github: 'piscesgh',
       linkedin: 'https://www.linkedin.com/in/kangjin-yoon-595938111/',
     },
-    {
-      name: 'Eric Oh',
-      linkedin: 'https://www.linkedin.com/in/eric-oh-a0450b27/',
-    },
   ],
 
   /** { name?, github?, linkedin? } — github and linkedin are optional. */
