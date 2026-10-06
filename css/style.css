@@ -1010,6 +1010,7 @@ body.landing .affiliation-body h3 {
 }
 
 body.landing .person-role,
+body.landing .person-timeline,
 body.landing .affiliation-body p {
   color: var(--ink-secondary);
 }
@@ -1039,7 +1040,8 @@ body.landing .affiliation-body p {
   margin-bottom: 0.15rem;
 }
 
-.person-role {
+.person-role,
+.person-timeline {
   font-size: 0.85rem;
   color: var(--color-text-light);
   margin-bottom: 0.35rem;

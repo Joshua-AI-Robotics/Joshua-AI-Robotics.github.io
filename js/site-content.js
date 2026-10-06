@@ -30,21 +30,23 @@ window.JOSHUA_SITE = {
       linkedin: 'https://www.linkedin.com/in/donegjookim',
     },
     {
-      name: 'Taesung Heo',
-      github: 'heostar',
-      linkedin: 'https://www.linkedin.com/in/theo3/',
-    },
-    {
       name: 'Kangjin Yoon',
       github: 'piscesgh',
       linkedin: 'https://www.linkedin.com/in/kangjin-yoon-595938111/',
     },
   ],
 
-  /** { name?, github?, linkedin? } — github and linkedin are optional. */
+  /** { name?, github?, linkedin?, contributionPeriod? } — profile links and dates are optional. */
   contributors: [
     {
+      name: 'Taesung Heo',
+      contributionPeriod: 'Nov 2025 – Oct 9, 2026',
+      github: 'heostar',
+      linkedin: 'https://www.linkedin.com/in/theo3/',
+    },
+    {
       name: 'Unghee Lee',
+      contributionPeriod: 'Nov 2025 – Dec 11, 2025',
       github: 'ungheele',
       linkedin: 'https://www.linkedin.com/in/ung-hee-lee-81732212b/',
     },
@@ -157,6 +159,9 @@ window.JOSHUA_SITE = {
       escapeHtml(displayName) +
       '</h3>' +
       (person.role ? '<p class="person-role">' + escapeHtml(person.role) + '</p>' : '') +
+      (person.contributionPeriod
+        ? '<p class="person-timeline">' + escapeHtml(person.contributionPeriod) + '</p>'
+        : '') +
       personLinksHtml(person) +
       '</div></li>'
     );
