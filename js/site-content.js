@@ -46,7 +46,7 @@ window.JOSHUA_SITE = {
     },
     {
       name: 'Unghee Lee',
-      contributionPeriod: 'Nov 2025 – Dec 11, 2025',
+      contributionPeriod: 'Aug 2025 – Dec 11, 2025',
       github: 'ungheele',
       linkedin: 'https://www.linkedin.com/in/ung-hee-lee-81732212b/',
     },
