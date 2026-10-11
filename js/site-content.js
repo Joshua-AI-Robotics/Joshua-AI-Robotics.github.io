@@ -10,7 +10,6 @@ window.JOSHUA_SITE = {
       'We are based in the San Francisco Bay Area and work with collaborators locally and around the world.',
     founderNote: null,
     coreTeamNote: null,
-    contributorsNote: null,
     affiliationsNote: 'Research groups and partners collaborating on Joshua.',
   },
 
@@ -33,22 +32,6 @@ window.JOSHUA_SITE = {
       name: 'Kangjin Yoon',
       github: 'piscesgh',
       linkedin: 'https://www.linkedin.com/in/kangjin-yoon-595938111/',
-    },
-  ],
-
-  /** { name?, github?, linkedin?, contributionPeriod? } — profile links and dates are optional. */
-  contributors: [
-    {
-      name: 'Taesung Heo',
-      contributionPeriod: 'Nov 2025 – Oct 9, 2026',
-      github: 'heostar',
-      linkedin: 'https://www.linkedin.com/in/theo3/',
-    },
-    {
-      name: 'Unghee Lee',
-      contributionPeriod: 'Aug 2025 – Dec 11, 2025',
-      github: 'ungheele',
-      linkedin: 'https://www.linkedin.com/in/ung-hee-lee-81732212b/',
     },
   ],
 
@@ -271,12 +254,6 @@ window.JOSHUA_SITE = {
       coreTeamNote.hidden = !data.about.coreTeamNote;
     }
 
-    var contributorsNote = document.getElementById('about-contributors-note');
-    if (contributorsNote) {
-      contributorsNote.textContent = data.about.contributorsNote || '';
-      contributorsNote.hidden = !data.about.contributorsNote;
-    }
-
     var affiliationsNote = document.getElementById('about-affiliations-note');
     if (affiliationsNote) {
       affiliationsNote.textContent = data.about.affiliationsNote || '';
@@ -288,11 +265,6 @@ window.JOSHUA_SITE = {
       document.getElementById('core-team-list'),
       data.coreTeam || [],
       'No core team members listed.'
-    );
-    renderPeopleList(
-      document.getElementById('contributors-list'),
-      data.contributors || [],
-      'No contributors listed.'
     );
     renderAffiliations(document.getElementById('affiliations-list'), data.affiliations || []);
   }
