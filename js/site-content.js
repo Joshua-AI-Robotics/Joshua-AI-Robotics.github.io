@@ -5,7 +5,7 @@
 window.JOSHUA_SITE = {
   about: {
     introHtml:
-      '<a We connect researchers, engineers, and partner labs who want robotics software that is modular, reproducible, and practical on real hardware.',
+      'We connect researchers, engineers, and partner labs who want robotics software that is modular, reproducible, and practical on real hardware.',
     introFollowHtml:
       'We are based in the San Francisco Bay Area and work with collaborators locally and around the world.',
     founderNote: null,
@@ -18,7 +18,8 @@ window.JOSHUA_SITE = {
     name: 'Hye-Sung Moon',
     role: 'Founder',
     github: 'hsmoon5458',
-    linkedin: 'https://www.linkedin.com/in/hye-sung-moon-03a35514a',
+    avatar: 'assets/images/people/hye-sung-moon-linkedin.jpg',
+    linkedin: 'https://www.linkedin.com/in/hyesungmoon',
   },
 
   /** Core team members. { name?, github?, linkedin? } */

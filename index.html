@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JOSHUA — Joint open-source hub for universal automation</title>
-  <meta name="description" content="Project Joshua bridges AI/ML development and real-world robotics through decoupled, configuration-driven software on ROS 2 and Bazel.">
+  <meta name="description" content="Build robots from reusable components with Joshua: a configuration-driven ROS 2 framework with hardware discovery and configuration validation through Joshua MCP.">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="landing">
@@ -37,12 +37,58 @@
   <section class="tab-panel active" role="tabpanel" id="panel-project" aria-labelledby="tab-project">
     <div class="prose">
       <p class="lead">
-        Project Joshua is a modular software framework engineered to bridge the critical gap between advanced AI/ML development and real-world physical deployment.
+        Project Joshua is an open-source robotics framework for building robots from reusable components. Built on ROS 2, it brings hardware drivers, control, perception, and AI into one configuration-driven stack.
       </p>
       <p class="lead lead-follow">
-        Historically, deploying AI onto robots has been a brittle, highly coupled process. Joshua solves this by decoupling software layers, enabling developers to deploy complex AI models across diverse robotic hardware with minimal friction.
+        Define your robot’s devices and pipelines in a single configuration, then reuse the same interfaces across different setups. Explore the catalog to see what is integrated, what has been tested, and under which conditions.
       </p>
+      <figure class="prompt-demo" id="prompt-demo">
+        <picture>
+          <source media="(max-width: 560px)" srcset="assets/images/joshua-mcp-prompt-mobile.png" data-static-src="assets/images/joshua-mcp-prompt-mobile.png" data-animated-src="assets/images/joshua-mcp-prompt-mobile.gif">
+          <img src="assets/images/joshua-mcp-prompt.png" data-static-src="assets/images/joshua-mcp-prompt.png" data-animated-src="assets/images/joshua-mcp-prompt.gif" width="1280" height="184" alt="Prompt example: Build and validate my robot arm’s control pipeline with Joshua MCP.">
+        </picture>
+        <figcaption>
+          <span>AI assistant + Joshua MCP</span>
+          <button type="button" id="prompt-animation-toggle" hidden>Play animation</button>
+        </figcaption>
+      </figure>
+      <p class="prompt-explanation">Use your AI assistant with <a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/docs/MCP_SETUP.md" target="_blank" rel="noopener noreferrer">Joshua MCP</a> to discover hardware, prepare configurations, and validate your robot setup.</p>
     </div>
+
+    <section class="content-section integration-catalog" id="integrations" aria-labelledby="integration-heading">
+      <h2 class="integration-heading" id="integration-heading">Integration catalog</h2>
+      <div class="integration-counts">
+        <div class="integration-total" aria-labelledby="integration-hardware-label">
+          <output class="integration-number" id="integration-hardware-number" aria-live="polite">—</output>
+          <p class="integration-label" id="integration-hardware-label">Hardware Integrated</p>
+          <p class="integration-coverage" id="integration-hardware-coverage"></p>
+        </div>
+        <div class="integration-total" aria-labelledby="integration-software-label">
+          <output class="integration-number" id="integration-software-number" aria-live="polite">—</output>
+          <p class="integration-label" id="integration-software-label">Device Software Integrated</p>
+          <p class="integration-coverage" id="integration-software-coverage"></p>
+        </div>
+      </div>
+      <div class="integration-search">
+        <label class="integration-search-label" for="integration-query">Search the catalog</label>
+        <input type="search" id="integration-query" placeholder="Search hardware, software, or vendors" autocomplete="off" disabled>
+      </div>
+      <div class="integration-results">
+        <p class="integration-result-label" id="integration-result-label" role="status"></p>
+        <ul class="integration-list" id="integration-list"></ul>
+        <button type="button" class="integration-more" id="integration-more" hidden>Show more</button>
+      </div>
+      <details class="integration-method">
+        <summary>About these numbers</summary>
+        <div>
+          <p>Coverage uses dated vendor research plus current catalog additions, not a worldwide total. Generic families remain searchable without being counted again alongside exact models. Search includes candidates whose feasibility has not yet been assessed. The counts show implementations confirmed by the linked Joshua source; physical tests and attributed reviews are recorded separately in each device file.</p>
+          <p>Device software includes drivers, SDKs, sensor capture, hardware control interfaces, and device communication. Pybricks is a bench-control tool; SOES is an opt-in firmware path.</p>
+          <p id="integration-snapshot"></p>
+          <p><a href="data/integration-targets.json">Named targets and primary sources</a></p>
+        </div>
+      </details>
+      <noscript><p class="integration-noscript">Enable JavaScript to view and search the integration catalog. The <a href="data/integration-targets.json">target list</a> is also available directly.</p></noscript>
+    </section>
 
     <section class="content-section">
       <h2 class="section-title">Technical Backbone</h2>
@@ -122,6 +168,8 @@
     <p class="panel-note" id="about-affiliations-note"></p>
     <ul class="affiliation-grid" id="affiliations-list"></ul>
   </section>
+
+
 </main>
 
 <footer class="footer landing-footer">
@@ -132,6 +180,9 @@
 
 <script src="js/site-content.js"></script>
 <script src="js/tabs.js"></script>
+<script src="js/prompt-demo.js"></script>
+<script src="js/integrations-data.js"></script>
+<script src="js/integrations.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,90 @@
+name: Build and refresh website
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Select Joshua source
+        id: joshua-source
+        env:
+          BUILD_EVENT: ${{ github.event_name }}
+        run: |
+          python3 - <<'PYCODE'
+          import json
+          import os
+          from pathlib import Path
+          import re
+
+          revision = 'develop'
+          if os.environ['BUILD_EVENT'] == 'pull_request':
+              source = Path('js/integrations-data.js').read_text()
+              payload = json.loads(source.removeprefix('window.JOSHUA_INTEGRATIONS = ').strip().removesuffix(';'))
+              revision = payload['joshua_revision']
+              if not re.fullmatch(r'[0-9a-f]{40}', revision):
+                  raise ValueError('The preview needs a full Joshua commit SHA')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('revision=' + revision + '\n')
+          PYCODE
+      - uses: actions/checkout@v6
+        with:
+          repository: Joshua-AI-Robotics/Joshua
+          ref: ${{ steps.joshua-source.outputs.revision }}
+          path: .joshua-source
+          persist-credentials: false
+      - name: Check catalog generation
+        run: python3 -m unittest discover -s scripts -p '*_test.py'
+      - name: Refresh from committed Joshua catalog
+        run: python3 scripts/update_integrations.py --joshua-root .joshua-source --revision HEAD
+      - name: Verify committed PR snapshot
+        if: github.event_name == 'pull_request'
+        run: git diff --exit-code -- js/integrations-data.js
+      - name: Validate browser scripts
+        run: |
+          node --check js/tabs.js
+          node --check js/site-content.js
+          node --check js/prompt-demo.js
+          node --check js/integrations.js
+          node --check js/integrations-data.js
+      - name: Package static site
+        run: |
+          mkdir _site
+          cp -R index.html css js assets docs data CNAME .nojekyll _site/
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4

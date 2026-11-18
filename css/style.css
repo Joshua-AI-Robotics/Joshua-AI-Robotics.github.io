@@ -625,7 +625,7 @@ img { max-width: 100%; height: auto; }
 
 /* ===== Landing (Apple-inspired one-pager) ===== */
 body.landing {
-  --surface: #fbfbfd;
+  --surface: #ffffff;
   --surface-elevated: #ffffff;
   --ink: #1d1d1f;
   --ink-secondary: #6e6e73;
@@ -651,7 +651,7 @@ body.landing a:hover {
 }
 
 body.landing .nav {
-  background: rgba(251, 251, 253, 0.72);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--divider);
@@ -730,7 +730,7 @@ body.landing .nav-github:hover {
 
 .tab-btn {
   flex: 1;
-  padding: 0.5rem 1.25rem;
+  padding: 0.5rem clamp(0.65rem, 2vw, 1.25rem);
   border: none;
   border-radius: var(--radius-pill);
   background: transparent;
@@ -1193,4 +1193,196 @@ body.landing .landing-footer a {
 
 body.landing .landing-footer a:hover {
   color: var(--ink);
+}
+
+.integration-catalog { scroll-margin-top: 5rem; }
+
+.integration-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.integration-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 4vw, 3rem);
+  max-width: 42rem;
+  margin: 1.4rem auto 2.75rem;
+}
+
+.integration-total { text-align: center; }
+
+.integration-number {
+  display: block;
+  font-size: clamp(4rem, 16vw, 11rem);
+  line-height: 1;
+  letter-spacing: -0.075em;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
+  padding-right: 0.075em;
+}
+
+.integration-label {
+  margin-top: 1rem;
+  font-size: clamp(0.875rem, 2vw, 1.25rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.integration-coverage {
+  margin-top: 0.4rem;
+  color: var(--ink-secondary);
+  font-size: 0.875rem;
+}
+
+.integration-search,
+.integration-results,
+.integration-method,
+.integration-noscript {
+  max-width: 34rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.integration-search-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--ink-secondary);
+}
+
+#integration-query {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--surface-elevated);
+  color: var(--ink);
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-size: 1rem;
+  appearance: auto;
+}
+
+#integration-query:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.integration-result-label {
+  margin: 1.5rem 0 0.3rem;
+  font-size: 0.875rem;
+  color: var(--ink-secondary);
+}
+
+.integration-list {
+  list-style: none;
+}
+
+.integration-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.integration-list li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.integration-list a {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.integration-list p,
+.integration-status {
+  font-size: 0.875rem;
+  color: var(--ink-secondary);
+}
+
+.integration-status {
+  flex: 0 0 auto;
+}
+
+.integration-more {
+  display: block;
+  margin: 1rem auto 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.integration-more[hidden] { display: none; }
+
+.integration-method {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--ink-secondary);
+}
+
+.integration-method summary {
+  width: fit-content;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.integration-method p { margin-top: 1rem; }
+
+@media (max-width: 440px) {
+  .landing-tagline { white-space: normal; }
+  .integration-list li { gap: 0.65rem; }
+  .integration-list p { max-width: 13rem; }
+}
+
+
+.prompt-demo { margin: 2rem auto 0; }
+
+.prompt-demo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.prompt-demo figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.65rem;
+  color: var(--ink-secondary);
+  font-size: 0.875rem;
+}
+
+#prompt-animation-toggle {
+  padding: 0.25rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.prompt-explanation {
+  margin-top: 1rem;
+  color: var(--ink-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 560px) {
+  .prompt-demo img { aspect-ratio: 640 / 250; }
 }
