@@ -809,46 +809,38 @@ body.landing .panel-heading {
   border: none;
 }
 
-.feature-grid {
-  list-style: none;
+.project-overview {
   display: grid;
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 3rem;
+  max-width: 48rem;
+  margin: 0 auto 2.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--divider);
 }
 
-@media (min-width: 600px) {
-  .feature-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-  }
-}
-
-.feature-item {
-  padding: 1.5rem 1.35rem;
-  background: var(--surface-elevated);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--divider);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.feature-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-}
-
-.feature-item h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.project-overview h2 {
+  margin-bottom: 0.65rem;
   color: var(--ink);
-  margin-bottom: 0.4rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-.feature-item p {
-  font-size: 0.9375rem;
+.project-overview dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  font-size: 0.875rem;
   line-height: 1.5;
-  color: var(--ink-secondary);
+}
+
+.project-overview dt { font-weight: 500; }
+.project-overview dd { color: var(--ink-secondary); text-align: right; }
+
+@media (max-width: 640px) {
+  .project-overview { grid-template-columns: 1fr; max-width: 30rem; }
 }
 
 .landing-figure {
@@ -1357,25 +1349,6 @@ body.landing .landing-footer a:hover {
   height: auto;
 }
 
-.prompt-demo figcaption {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.65rem;
-  color: var(--ink-secondary);
-  font-size: 0.875rem;
-}
-
-#prompt-animation-toggle {
-  padding: 0.25rem 0;
-  border: 0;
-  background: transparent;
-  color: var(--accent);
-  font: inherit;
-  cursor: pointer;
-}
-
 .prompt-explanation {
   margin-top: 1rem;
   color: var(--ink-secondary);
@@ -1384,5 +1357,5 @@ body.landing .landing-footer a:hover {
 }
 
 @media (max-width: 560px) {
-  .prompt-demo img { aspect-ratio: 640 / 250; }
+  .prompt-demo img { aspect-ratio: 640 / 600; }
 }

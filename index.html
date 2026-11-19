@@ -35,6 +35,27 @@
 
   <!-- Tab 1: Project -->
   <section class="tab-panel active" role="tabpanel" id="panel-project" aria-labelledby="tab-project">
+    <div class="project-overview">
+      <section aria-labelledby="backbone-heading">
+        <h2 id="backbone-heading">Technical Backbone</h2>
+        <dl>
+          <div><dt>Ubuntu</dt><dd>22.04 / 24.04</dd></div>
+          <div><dt>ROS 2 · Bazel</dt><dd>Messaging and builds</dd></div>
+          <div><dt>C++ · Python</dt><dd>Runtime and tooling</dd></div>
+          <div><dt>x86 · ARM64</dt><dd>NVIDIA Jetson support</dd></div>
+        </dl>
+      </section>
+      <section aria-labelledby="features-heading">
+        <h2 id="features-heading">Key Features</h2>
+        <dl>
+          <div><dt>One configuration</dt><dd>Devices and pipelines</dd></div>
+          <div><dt>Reusable interfaces</dt><dd>Sensors and actuators</dd></div>
+          <div><dt>AI + MCP</dt><dd>Discovery and validation</dd></div>
+          <div><dt>Simulation</dt><dd>MuJoCo and Isaac Sim</dd></div>
+        </dl>
+      </section>
+    </div>
+
     <div class="prose">
       <p class="lead">
         Project Joshua is an open-source robotics framework for building robots from reusable components. Built on ROS 2, it brings hardware drivers, control, perception, and AI into one configuration-driven stack.
@@ -45,14 +66,26 @@
       <figure class="prompt-demo" id="prompt-demo">
         <picture>
           <source media="(max-width: 560px)" srcset="assets/images/joshua-mcp-prompt-mobile.png" data-static-src="assets/images/joshua-mcp-prompt-mobile.png" data-animated-src="assets/images/joshua-mcp-prompt-mobile.gif">
-          <img src="assets/images/joshua-mcp-prompt.png" data-static-src="assets/images/joshua-mcp-prompt.png" data-animated-src="assets/images/joshua-mcp-prompt.gif" width="1280" height="184" alt="Prompt example: Build and validate my robot arm’s control pipeline with Joshua MCP.">
+          <img src="assets/images/joshua-mcp-prompt.png" data-static-src="assets/images/joshua-mcp-prompt.png" data-animated-src="assets/images/joshua-mcp-prompt.gif" width="1280" height="560" alt="AI assistant chat example: Build and validate my robot arm’s control pipeline with Joshua MCP.">
         </picture>
-        <figcaption>
-          <span>AI assistant + Joshua MCP</span>
-          <button type="button" id="prompt-animation-toggle" hidden>Play animation</button>
-        </figcaption>
       </figure>
       <p class="prompt-explanation">Use your AI assistant with <a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/docs/MCP_SETUP.md" target="_blank" rel="noopener noreferrer">Joshua MCP</a> to discover hardware, prepare configurations, and validate your robot setup.</p>
+    </div>
+
+    <figure class="landing-figure">
+      <img src="assets/images/joshua_summary.png" alt="Project Joshua workflow: single config file to ROS2 node generator, action, perception, and AI nodes, operating a robot">
+    </figure>
+
+    <div class="cta-block">
+      <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="btn btn-primary btn-cta-main" target="_blank" rel="noopener noreferrer">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Get started on GitHub
+      </a>
+      <div class="cta-links">
+        <a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md" target="_blank" rel="noopener noreferrer">Documentation &amp; quick start</a>
+        <span class="cta-links-sep" aria-hidden="true">·</span>
+        <a href="https://github.com/Joshua-AI-Robotics" target="_blank" rel="noopener noreferrer">Organization</a>
+      </div>
     </div>
 
     <section class="content-section integration-catalog" id="integrations" aria-labelledby="integration-heading">
@@ -89,66 +122,6 @@
       </details>
       <noscript><p class="integration-noscript">Enable JavaScript to view and search the integration catalog. The <a href="data/integration-targets.json">target list</a> is also available directly.</p></noscript>
     </section>
-
-    <section class="content-section">
-      <h2 class="section-title">Technical Backbone</h2>
-      <ul class="feature-grid">
-        <li class="feature-item">
-          <h3>OS</h3>
-          <p>Ubuntu 22.04 LTS / 24.04 LTS</p>
-        </li>
-        <li class="feature-item">
-          <h3>ROS2 &amp; Bazel</h3>
-          <p>ROS&nbsp;2 messaging with Bazel for hermetic, deterministic builds</p>
-        </li>
-        <li class="feature-item">
-          <h3>Languages</h3>
-          <p>Modern C++ and Python</p>
-        </li>
-        <li class="feature-item">
-          <h3>Hardware</h3>
-          <p>Cross-compilation for x86 and ARM64, including NVIDIA Jetson</p>
-        </li>
-      </ul>
-    </section>
-
-    <section class="content-section">
-      <h2 class="section-title">Key Features</h2>
-      <ul class="feature-grid">
-        <li class="feature-item">
-          <h3>Configuration-Driven</h3>
-          <p>One centralized config runs the same core stack on different robot form factors.</p>
-        </li>
-        <li class="feature-item">
-          <h3>Hardware Abstraction</h3>
-          <p>Swap sensors and actuators without changing upstream AI or the rest of the stack.</p>
-        </li>
-        <li class="feature-item">
-          <h3>Open Ecosystem</h3>
-          <p>ROS&nbsp;2 and Bazel integrate with the broader open-source robotics community.</p>
-        </li>
-        <li class="feature-item">
-          <h3>Sim-to-Real</h3>
-          <p>Move from simulation to physical robots with configuration toggles—no code changes.</p>
-        </li>
-      </ul>
-    </section>
-
-    <figure class="landing-figure">
-      <img src="assets/images/joshua_summary.png" alt="Project Joshua workflow: single config file to ROS2 node generator, action, perception, and AI nodes, operating a robot">
-    </figure>
-
-    <div class="cta-block">
-      <a href="https://github.com/Joshua-AI-Robotics/Joshua" class="btn btn-primary btn-cta-main" target="_blank" rel="noopener noreferrer">
-        <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        Get started on GitHub
-      </a>
-      <div class="cta-links">
-        <a href="https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md" target="_blank" rel="noopener noreferrer">Documentation &amp; quick start</a>
-        <span class="cta-links-sep" aria-hidden="true">·</span>
-        <a href="https://github.com/Joshua-AI-Robotics" target="_blank" rel="noopener noreferrer">Organization</a>
-      </div>
-    </div>
   </section>
 
   <!-- Tab 2: About Us (content from js/site-content.js) -->

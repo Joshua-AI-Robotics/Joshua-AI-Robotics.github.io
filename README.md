@@ -9,7 +9,8 @@ Full documentation lives on GitHub: [Joshua README](https://github.com/Joshua-AI
 
 ## Integration catalog
 
-The catalog appears directly below the Project introduction. `index.html#project`
+Technical Backbone and Key Features form a compact overview at the top of Project.
+The catalog appears at the bottom, below the AI demo, diagram and GitHub links. `index.html#project`
 opens the full overview; `index.html#integrations` jumps to its catalog section.
 
 [AGENTS.md](AGENTS.md) owns the device-addition rule, hardware/software scope,

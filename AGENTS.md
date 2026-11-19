@@ -1,7 +1,9 @@
 # Joshua public website
 
 Preserve the existing white layout, typography and About Us content.
-Keep the integration catalog inside Project, directly after its introduction;
+Keep Technical Backbone and Key Features compact at the top of Project. Put
+the integration catalog last within Project, after the introduction, AI demo,
+project diagram and GitHub links;
 there is no separate Integrations tab. Show two large counts together, one search
 field, and linked results with their type and status. Search covers hardware,
 device software, discovered candidates and other catalog records. Counts remain
@@ -89,8 +91,11 @@ LinkedIn CDN URL.
 The prompt GIF illustrates an AI assistant using Joshua MCP. Show discovery,
 configuration preparation and validation. Current MCP adapters are read-only;
 do not depict direct motor commands, automatic flashing or physical qualification.
-Keep the white input styling and expose pause/play plus a static reduced-motion
-fallback. GIFs are illustrative images, not a working chat input.
+Use a recognizable AI-assistant window with an assistant message, prompt composer
+and Joshua MCP tool label. Keep the page white. The animation plays once in under
+five seconds and settles on the completed prompt; there is no pause/play text
+button. Provide a static reduced-motion fallback. GIFs are illustrative images,
+not a working chat input.
 
 Regenerate the desktop/mobile GIF and PNG variants with
 `python3 scripts/generate_prompt_demo.py`. Authoring requires Pillow and DejaVu
