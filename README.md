@@ -2,15 +2,15 @@
 
 One-page site for [joshua-ai-robotics.org](https://joshua-ai-robotics.org) with two tabs:
 
-- **Project** — framework overview, hardware/device-software counts and a shared integration search, followed by technical features and links to [Joshua](https://github.com/Joshua-AI-Robotics/Joshua)
+- **Project** — framework introduction, AI demo and diagram, followed by GitHub links and a searchable hardware/device-software catalog for [Joshua](https://github.com/Joshua-AI-Robotics/Joshua)
 - **About Us** — founder, core team, and affiliations (edit [`js/site-content.js`](js/site-content.js); optional `linkedin` URLs for people; affiliation logos in `assets/images/affiliations/`)
 
 Full documentation lives on GitHub: [Joshua README](https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md).
 
 ## Integration catalog
 
-Technical Backbone and Key Features form a compact overview at the top of Project.
-The catalog appears at the bottom, below the AI demo, diagram and GitHub links. `index.html#project`
+The catalog appears at the bottom of Project, below the AI demo, diagram and
+GitHub links. A divider and “Integration coverage” introduction explain the counts. `index.html#project`
 opens the full overview; `index.html#integrations` jumps to its catalog section.
 
 [AGENTS.md](AGENTS.md) owns the device-addition rule, hardware/software scope,

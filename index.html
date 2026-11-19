@@ -35,27 +35,6 @@
 
   <!-- Tab 1: Project -->
   <section class="tab-panel active" role="tabpanel" id="panel-project" aria-labelledby="tab-project">
-    <div class="project-overview">
-      <section aria-labelledby="backbone-heading">
-        <h2 id="backbone-heading">Technical Backbone</h2>
-        <dl>
-          <div><dt>Ubuntu</dt><dd>22.04 / 24.04</dd></div>
-          <div><dt>ROS 2 · Bazel</dt><dd>Messaging and builds</dd></div>
-          <div><dt>C++ · Python</dt><dd>Runtime and tooling</dd></div>
-          <div><dt>x86 · ARM64</dt><dd>NVIDIA Jetson support</dd></div>
-        </dl>
-      </section>
-      <section aria-labelledby="features-heading">
-        <h2 id="features-heading">Key Features</h2>
-        <dl>
-          <div><dt>One configuration</dt><dd>Devices and pipelines</dd></div>
-          <div><dt>Reusable interfaces</dt><dd>Sensors and actuators</dd></div>
-          <div><dt>AI + MCP</dt><dd>Discovery and validation</dd></div>
-          <div><dt>Simulation</dt><dd>MuJoCo and Isaac Sim</dd></div>
-        </dl>
-      </section>
-    </div>
-
     <div class="prose">
       <p class="lead">
         Project Joshua is an open-source robotics framework for building robots from reusable components. Built on ROS 2, it brings hardware drivers, control, perception, and AI into one configuration-driven stack.
@@ -89,7 +68,10 @@
     </div>
 
     <section class="content-section integration-catalog" id="integrations" aria-labelledby="integration-heading">
-      <h2 class="integration-heading" id="integration-heading">Integration catalog</h2>
+      <header class="integration-intro">
+        <h2 class="integration-heading" id="integration-heading">Integration coverage</h2>
+        <p>Hardware models and device software integrated into Joshua. Search below to explore integrations, candidates, and their supporting records.</p>
+      </header>
       <div class="integration-counts">
         <div class="integration-total" aria-labelledby="integration-hardware-label">
           <output class="integration-number" id="integration-hardware-number" aria-live="polite">—</output>

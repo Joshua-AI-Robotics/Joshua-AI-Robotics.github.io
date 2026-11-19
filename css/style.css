@@ -809,40 +809,6 @@ body.landing .panel-heading {
   border: none;
 }
 
-.project-overview {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem 3rem;
-  max-width: 48rem;
-  margin: 0 auto 2.75rem;
-  padding-bottom: 1.75rem;
-  border-bottom: 1px solid var(--divider);
-}
-
-.project-overview h2 {
-  margin-bottom: 0.65rem;
-  color: var(--ink);
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.project-overview dl > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.3rem 0;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.project-overview dt { font-weight: 500; }
-.project-overview dd { color: var(--ink-secondary); text-align: right; }
-
-@media (max-width: 640px) {
-  .project-overview { grid-template-columns: 1fr; max-width: 30rem; }
-}
-
 .landing-figure {
   margin: 0 auto 3.5rem;
   text-align: center;
@@ -1187,16 +1153,31 @@ body.landing .landing-footer a:hover {
   color: var(--ink);
 }
 
-.integration-catalog { scroll-margin-top: 5rem; }
+.integration-catalog {
+  scroll-margin-top: 5rem;
+  margin-top: 1rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--divider);
+}
+
+.integration-intro {
+  max-width: 42rem;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
 
 .integration-heading {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.integration-intro p {
+  color: var(--ink-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .integration-counts {

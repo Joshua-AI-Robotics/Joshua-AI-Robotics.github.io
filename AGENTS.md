@@ -1,10 +1,10 @@
 # Joshua public website
 
 Preserve the existing white layout, typography and About Us content.
-Keep Technical Backbone and Key Features compact at the top of Project. Put
-the integration catalog last within Project, after the introduction, AI demo,
-project diagram and GitHub links;
-there is no separate Integrations tab. Show two large counts together, one search
+Start Project with its introduction and AI demo. Keep the integration catalog
+last within Project, after the diagram and GitHub links. Introduce its counts
+with a divider, the visible “Integration coverage” heading and a short explanation
+of what is counted. There is no separate Integrations tab. Show two large counts together, one search
 field, and linked results with their type and status. Search covers hardware,
 device software, discovered candidates and other catalog records. Counts remain
 independent of the search query. Keep source links labeled with directories.
