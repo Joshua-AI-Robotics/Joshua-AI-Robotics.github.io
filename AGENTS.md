@@ -3,7 +3,7 @@
 Preserve the existing white layout, typography and About Us content.
 Start Project with its introduction and AI demo. Keep the integration catalog
 last within Project, after the diagram and GitHub links. Introduce its counts
-with a divider, the visible “Integration coverage” heading and a short explanation
+with a divider, the visible “Joshua in Numbers” heading and a short explanation
 of what is counted. There is no separate Integrations tab. Show two large counts together, one search
 field, and linked results with their type and status. Search covers hardware,
 device software, discovered candidates and other catalog records. Counts remain

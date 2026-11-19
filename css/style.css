@@ -1169,7 +1169,8 @@ body.landing .landing-footer a:hover {
 .integration-heading {
   margin-bottom: 0.75rem;
   color: var(--ink);
-  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.02em;
 }

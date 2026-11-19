@@ -10,7 +10,7 @@ Full documentation lives on GitHub: [Joshua README](https://github.com/Joshua-AI
 ## Integration catalog
 
 The catalog appears at the bottom of Project, below the AI demo, diagram and
-GitHub links. A divider and “Integration coverage” introduction explain the counts. `index.html#project`
+GitHub links. A divider and “Joshua in Numbers” introduction explain the counts. `index.html#project`
 opens the full overview; `index.html#integrations` jumps to its catalog section.
 
 [AGENTS.md](AGENTS.md) owns the device-addition rule, hardware/software scope,
