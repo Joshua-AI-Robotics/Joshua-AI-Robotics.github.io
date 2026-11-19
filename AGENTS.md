@@ -65,10 +65,13 @@ The schedule refreshes catalog changes after they reach `develop`; it is not an
 instant cross-repository notification and GitHub may delay scheduled runs.
 
 The workflow must be published on the site's default branch and Pages must use
-GitHub Actions as its publishing source. Joshua's version 2 catalog must first
-be available on `develop` (PR #160). Until those steps are completed, the local
-snapshot is a preview and automatic publication is not active. Follow the user's
-publication instructions; local preview work does not change hosting settings.
+GitHub Actions as its publishing source. Until Joshua's version 2 catalog reaches
+`develop` (PR #160), the workflow regenerates from the reviewed commit pinned in
+the site's snapshot and logs that bootstrap choice. It switches to `develop`
+automatically once the schema exists there. Invalid catalogs or failed fetches
+still fail the build; they do not publish fabricated empty counts. Source links
+remain pinned to the commit actually used. Follow the user's publication
+instructions; local preview work does not change hosting settings.
 
 ## Verification
 
