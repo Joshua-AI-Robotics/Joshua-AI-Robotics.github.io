@@ -11,75 +11,62 @@ independent of the search query. Keep source links labeled with directories.
 
 ## Catalog ownership and device additions
 
-Joshua's `docs/hardware_catalog/<id>.json` owns each device's identity,
-implementation status and validation history. A device integration must add or
-update that single file in the same Joshua change. Keep candidate, integrated,
-unsupported and retired statuses accurate. Software implementation is separate
-from physical evidence and attributed review. The website consumes those facts;
-do not copy test outcomes, validator identities or operating procedures here.
+Joshua owns all catalog data and logic. Hardware candidates, integrated devices,
+manufacturer references, coverage exclusions and physical validation history live
+in `docs/hardware_catalog/<id>.json`. Drivers, SDKs and device libraries live in
+`docs/device_software_catalog/<id>.json`. Each device or software integration has
+one authoritative record. Update that record in the same Joshua PR as its
+implementation or status change. Joshua's catalog `AGENTS.md` files own eligibility
+and counting rules; the website renders their export without redefining them.
 
-The [generator](scripts/update_integrations.py) imports every committed device
-file, including newly added IDs outside the initial vendor discovery list. A new
-device needs no website entry or manual count edit. Existing `catalog_id` values
-handle legacy aliases. Review identity collisions rather than guessing a match.
+Do not add a manual target list, software mapping, evidence copy or percentage
+here. The former `data/integration-targets.json`, `js/integrations-data.js` and
+local generator were migrated to Joshua. No catalog database is used.
 
-[integration-targets.json](data/integration-targets.json) owns the dated discovery
-scope, manufacturer sources and device-software mappings. Preserve meaningful
-model/interface variants while deduplicating marketing aliases, protocol-only
-versions, bundles and passive accessories. Explicit `coverage_exclusions` keep
-generic families searchable without counting them again alongside exact models.
-New catalog devices normally join the denominator automatically. Explain any
-coverage exclusion. The dated vendor list plus current catalog is a researched
-scope, not a worldwide total.
+## Generation and daily publication
 
-Device software must directly capture sensor data, control devices, expose
-hardware control interfaces, or implement device communication. Add or update its
-curated `joshua_source` mapping when introducing a driver/SDK dependency. Do not
-guess integrations from arbitrary dependency names. The generator verifies each
-mapped source against the selected commit. Simulators, learning/AI frameworks,
-planners and general data/debugging tools are outside this metric. Pybricks is a
-bench-control tool; SOES is an opt-in firmware path.
+The shared `tools/hardware_catalog.py` in Joshua validates and exports both
+catalogs. It requires a clean committed checkout, preserves unknown historical
+provenance, rejects invalid/missing integration references and pins source links
+to the exported Joshua commit. It does not initialize drivers or access hardware.
 
-## Generation and automatic publication
+[pages.yml](.github/workflows/pages.yml) checks out Joshua `develop`, installs
+`jsonschema==4.26.0`, and runs its owning exporter into `_site/data/catalog.json`.
+The JSON exists only in the deployment artifact; never commit a generated copy.
+There are no website-side catalog schema, mapping or export implementations.
 
-Generate a local snapshot from a committed Joshua checkout with the version 2
-catalog:
+The site publishes once daily at 08:17 UTC, on website changes and on manual
+workflow dispatch. Browser pages fetch the published JSON on load and refresh it
+once every 24 hours. There is no minute polling or cross-repository write token.
+Preserve the user's query, visible-result limit and working data during refresh.
+A failed refresh keeps the loaded catalog; an initial failure shows explicit
+unavailability. Failed builds leave the previous deployment intact.
 
-```sh
-python3 scripts/update_integrations.py --joshua-root ../Joshua --revision HEAD
-python3 -m unittest discover -s scripts -p '*_test.py'
-```
+The source migration is a draft stacked on Joshua PR #160. Keep this companion
+website change in draft until that migration reaches `develop`. PR builds can
+fall back to `JOSHUA_PREVIEW_REVISION` only while the software catalog is absent
+from `develop`; production builds never publish an unmerged preview revision.
+Once migrated, PR and production builds both consume the latest `develop`.
+The Pages workflow must remain on the site's default branch with Actions as its
+publishing source. Update the preview pin deliberately if its dependency changes.
 
-`js/integrations-data.js` is generated. Never hand-edit its entries, counts or
-statuses. The frontend derives both counts and percentages from that snapshot.
-Directory and record links stay pinned to its Joshua commit even though commit
-hashes are not displayed in the UI. Catalog parsing here validates the consumed
-metadata; Joshua's own catalog checks remain the validation authority.
-
-[pages.yml](.github/workflows/pages.yml) checks out Joshua `develop`, regenerates
-the catalog and publishes the static artifact on site pushes, manual dispatch,
-and a six-hour schedule. PRs validate/package their committed Joshua snapshot
-without deploying; published builds and scheduled refreshes use `develop`. Failed builds
-leave the previous deployment intact. No cross-repository write token is needed.
-The schedule refreshes catalog changes after they reach `develop`; it is not an
-instant cross-repository notification and GitHub may delay scheduled runs.
-
-The workflow must be published on the site's default branch and Pages must use
-GitHub Actions as its publishing source. Until Joshua's version 2 catalog reaches
-`develop` (PR #160), the workflow regenerates from the reviewed commit pinned in
-the site's snapshot and logs that bootstrap choice. It switches to `develop`
-automatically once the schema exists there. Invalid catalogs or failed fetches
-still fail the build; they do not publish fabricated empty counts. Source links
-remain pinned to the commit actually used. Follow the user's publication
-instructions; local preview work does not change hosting settings.
+For local verification, export from a clean committed Joshua checkout using its
+supported Docker environment, placing JSON outside that checkout, then package
+it at `_site/data/catalog.json` alongside the static website files. The export
+needs neither website source data nor a second record update.
 
 ## Verification
 
-Check JavaScript syntax, generator tests, and workflow shell/YAML syntax. Exercise
-cross-kind search, candidate and unsupported statuses, empty results, show-more,
-count stability, direct tab links, keyboard navigation and narrow layouts. Verify
-that a newly committed device appears through regeneration without editing the
-website's target list. No check may open hardware or launch Joshua runtime.
+Check JavaScript and workflow syntax. Verify the package contains the generated
+catalog, source links match its Joshua commit, and no manual catalog remains.
+Exercise initial load/failure, hardware and software counts, cross-kind search,
+candidate/unsupported status, empty results, show-more and a daily refresh that
+preserves the active query. A failed or malformed refresh must preserve working
+counts and results. Keep keyboard navigation and narrow layouts intact.
+
+Joshua owns exporter regression tests. Check equivalence with the prior catalog
+and demonstrate that adding or integrating one Joshua record changes the export
+without any website record edit. No check may open hardware or launch Joshua.
 
 ## Portrait and prompt illustration
 

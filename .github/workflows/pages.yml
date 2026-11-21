@@ -7,7 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: '17 8 * * *'
 
 permissions:
   contents: read
@@ -16,6 +16,9 @@ concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  JOSHUA_PREVIEW_REVISION: ba5ba11c50dfc9407bcb413d13910a1b3420a8d3
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -23,67 +26,36 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Select Joshua source
-        id: joshua-source
-        env:
-          BUILD_EVENT: ${{ github.event_name }}
-        run: |
-          python3 - <<'PYCODE'
-          import json
-          import os
-          from pathlib import Path
-          import re
-
-          source = Path('js/integrations-data.js').read_text()
-          payload = json.loads(source.removeprefix('window.JOSHUA_INTEGRATIONS = ').strip().removesuffix(';'))
-          snapshot = payload['joshua_revision']
-          if not re.fullmatch(r'[0-9a-f]{40}', snapshot):
-              raise ValueError('The snapshot needs a full Joshua commit SHA')
-          revision = snapshot if os.environ['BUILD_EVENT'] == 'pull_request' else 'develop'
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write('revision=' + revision + '\n')
-              output.write('snapshot=' + snapshot + '\n')
-          PYCODE
       - uses: actions/checkout@v6
         with:
           repository: Joshua-AI-Robotics/Joshua
-          ref: ${{ steps.joshua-source.outputs.revision }}
+          ref: develop
           path: .joshua-source
           persist-credentials: false
-      - name: Check catalog generation
-        run: python3 -m unittest discover -s scripts -p '*_test.py'
-      - name: Refresh from committed Joshua catalog
-        env:
-          PINNED_JOSHUA_REVISION: ${{ steps.joshua-source.outputs.snapshot }}
-        run: |
-          python3 - <<'PYCODE'
-          import os
-          from pathlib import Path
-          import subprocess
-          import sys
-
-          root = Path('.joshua-source')
-          revision = 'HEAD'
-          if not (root / 'docs/hardware_catalog/catalog.schema.json').is_file():
-              revision = os.environ['PINNED_JOSHUA_REVISION']
-              print('::notice::The default branch has no version 2 catalog yet; publishing the reviewed snapshot.', flush=True)
-              subprocess.run(['git', '-C', str(root), 'fetch', '--depth=1', 'origin', revision], check=True)
-          subprocess.run([sys.executable, 'scripts/update_integrations.py', '--joshua-root', str(root), '--revision', revision], check=True)
-          PYCODE
-      - name: Verify committed PR snapshot
+      - name: Select pre-merge preview source
         if: github.event_name == 'pull_request'
-        run: git diff --exit-code -- js/integrations-data.js
+        run: |
+          if [ ! -f .joshua-source/docs/device_software_catalog/catalog.schema.json ]; then
+            git -C .joshua-source fetch --depth=1 origin "$JOSHUA_PREVIEW_REVISION"
+            git -C .joshua-source checkout --detach "$JOSHUA_PREVIEW_REVISION"
+          fi
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install catalog validation dependency
+        run: python -m pip install jsonschema==4.26.0
       - name: Validate browser scripts
         run: |
           node --check js/tabs.js
           node --check js/site-content.js
           node --check js/prompt-demo.js
           node --check js/integrations.js
-          node --check js/integrations-data.js
       - name: Package static site
         run: |
-          mkdir _site
-          cp -R index.html css js assets docs data CNAME .nojekyll _site/
+          mkdir -p _site/data
+          cp -R index.html css js assets docs CNAME .nojekyll _site/
+      - name: Export committed Joshua catalog
+        run: python .joshua-source/tools/hardware_catalog.py --export --output _site/data/catalog.json
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
