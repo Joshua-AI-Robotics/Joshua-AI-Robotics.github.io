@@ -5,7 +5,7 @@ One-page site for [joshua-ai-robotics.org](https://joshua-ai-robotics.org) with 
 - **Project** — framework introduction, AI demo and diagram, followed by GitHub links and a searchable hardware/device-software catalog for [Joshua](https://github.com/Joshua-AI-Robotics/Joshua)
 - **About Us** — founder, core team, and affiliations (edit [`js/site-content.js`](js/site-content.js); optional `linkedin` URLs for people; affiliation logos in `assets/images/affiliations/`)
 
-Full documentation lives on GitHub: [Joshua README](https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/README.md).
+Full documentation lives on GitHub: [Joshua guide and quick start](https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/AGENTS.md#quick-start).
 
 ## Integration catalog
 
