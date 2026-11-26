@@ -1,9 +1,6 @@
 # Joshua AI Robotics Website
 
-One-page site for [joshua-ai-robotics.org](https://joshua-ai-robotics.org) with two tabs:
-
-- **Project** — framework introduction, AI demo and diagram, followed by GitHub links and a searchable hardware/device-software catalog for [Joshua](https://github.com/Joshua-AI-Robotics/Joshua)
-- **About Us** — founder, core team, and affiliations (edit [`js/site-content.js`](js/site-content.js); optional `linkedin` URLs for people; affiliation logos in `assets/images/affiliations/`)
+One-page site for [joshua-ai-robotics.org](https://joshua-ai-robotics.org) with a framework introduction, AI demo and diagram, followed by GitHub links and a searchable hardware/device-software catalog for [Joshua](https://github.com/Joshua-AI-Robotics/Joshua).
 
 Full documentation lives on GitHub: [Joshua guide and quick start](https://github.com/Joshua-AI-Robotics/Joshua/blob/develop/AGENTS.md#quick-start).
 
