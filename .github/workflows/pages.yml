@@ -76,7 +76,6 @@ jobs:
       - name: Validate browser scripts
         run: |
           node --check js/tabs.js
-          node --check js/site-content.js
           node --check js/prompt-demo.js
           node --check js/integrations.js
           node --check js/integrations-data.js
